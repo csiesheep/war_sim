@@ -1,0 +1,1071 @@
+<title>逍遙津 UI 原型</title>
+<meta name="description" content="三國戰役誌（暫名）UI 原型：合肥・逍遙津之戰，絹本水墨地圖、旗牌合一兵團、插畫風將領，含桌機／平板／手機版面。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#1d1814; --desk-2:#2a231d; --desk-line:#4a3f33; --desk-ink:#efe4cc; --desk-mute:#b9ab91;
+  --paper:#eadcba; --paper-2:#e1d0a8; --paper-3:#d6c297; --card:#f1e6c9;
+  --ink:#2a221a; --ink-2:#5e503d; --rule:#b39d74;
+  --wei:#2c4a7c; --wu:#a3301f; --jade:#2f5b57; --jade-ink:#f3ead3; --seal:#b3321f; --gold:#a8822a;
+  --brush:'LXGW WenKai TC','Kaiti TC','STKaiti','BiauKai','Noto Serif TC',serif;
+  --sans:'Noto Sans TC',system-ui,-apple-system,'PingFang TC','Microsoft JhengHei',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --grain:none;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--desk)}
+body{color:var(--desk-ink);font-family:var(--sans);font-size:14px;line-height:1.55}
+:focus-visible{outline:2px solid #6fb3a5;outline-offset:2px}
+
+/* ---------- review page ---------- */
+.page{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:18px 48px;display:flex;flex-direction:column;gap:14px}
+@media (max-width:600px){.page{padding-inline:16px;padding-block:12px 32px}}
+.doc-head{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:flex-end;justify-content:space-between}
+.doc-head h1{font-family:var(--brush);font-size:26px;margin:0;letter-spacing:.06em;line-height:1.2}
+.doc-head p{margin:2px 0 0;color:var(--desk-mute);font-size:13px;max-width:62ch}
+.devbar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.dgroup{display:flex;align-items:center;gap:8px}
+.dlabel{font-size:12px;color:var(--desk-mute);letter-spacing:.12em;white-space:nowrap}
+.dseg{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--desk-line);border-radius:8px;background:var(--desk-2)}
+.dseg button{appearance:none;border:0;background:transparent;font:inherit;cursor:pointer;padding:5px 10px;border-radius:6px;font-size:13px;color:var(--desk-ink);white-space:nowrap}
+.dseg button[aria-pressed="true"]{background:var(--desk-ink);color:var(--desk);font-weight:700}
+.stagewrap{display:flex;justify-content:center}
+.device{position:relative;background:#0e0c0a;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.45);max-width:100%}
+.device[data-dev="desktop"]{width:100%;height:820px;border-radius:12px;border:1px solid var(--desk-line)}
+.device[data-dev="tablet"]{width:820px;height:1040px;border-radius:28px;border:12px solid #0b0908}
+.device[data-dev="phone"]{width:390px;height:800px;border-radius:40px;border:11px solid #0b0908}
+@media (max-width:700px){
+  .devbar .dev-only{display:none}
+  .device[data-dev]{width:100%;height:calc(100svh - 120px);min-height:560px;border-radius:14px;border:0}
+}
+.notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:6px}
+@media (max-width:900px){.notes{grid-template-columns:minmax(0,1fr)}}
+.notes section{border-top:1px solid var(--desk-line);padding-top:10px}
+.notes h2{margin:0 0 6px;font-family:var(--brush);font-size:18px;letter-spacing:.06em}
+.notes ul{margin:0;padding-left:18px;color:var(--desk-mute);font-size:13px;display:flex;flex-direction:column;gap:4px}
+.notes b{color:var(--desk-ink);font-weight:500}
+
+/* ---------- app shell ---------- */
+.app{container:app / inline-size;height:100%;display:flex;flex-direction:column;background-color:var(--paper);background-image:var(--grain);color:var(--ink);color-scheme:light;position:relative;overflow:hidden}
+.app :focus-visible{outline:2px solid var(--jade);outline-offset:2px}
+.appbar{flex:none;display:flex;align-items:center;gap:4px;height:50px;padding-inline:8px;border-bottom:1px solid var(--rule);background:var(--paper-2);position:relative;z-index:5}
+.appbar h2{flex:1;margin:0;font-family:var(--brush);font-size:19px;font-weight:700;letter-spacing:.08em;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ibtn{appearance:none;border:0;background:transparent;color:var(--ink);width:40px;height:40px;display:grid;place-items:center;border-radius:8px;cursor:pointer;flex:none}
+.ibtn:hover{background:var(--paper-3)}
+.ibtn svg{width:20px;height:20px}
+.ibtn.ghost{visibility:hidden}
+.screen{flex:1;min-height:0;overflow:auto}
+.screen.replay-screen{overflow:hidden}
+.btn{appearance:none;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);font:inherit;font-size:14px;padding:8px 14px;border-radius:4px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--paper-3)}
+.btn.primary{background:var(--jade);border-color:var(--jade);color:var(--jade-ink);font-weight:700}
+.btn.primary:hover{background:#264b48}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;background:var(--card);padding:2px;gap:2px}
+.seg button{appearance:none;border:0;background:transparent;color:var(--ink);font:inherit;font-size:13px;padding:5px 10px;border-radius:4px;cursor:pointer;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper);font-weight:700}
+.eyebrow{font-size:11.5px;letter-spacing:.16em;color:var(--ink-2)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---------- menu ---------- */
+.menu{padding:18px 16px 28px;display:flex;flex-direction:column;gap:18px;max-width:1080px;margin:0 auto}
+.brand{display:flex;align-items:baseline;gap:4px 12px;flex-wrap:wrap}
+.brand b{font-family:var(--brush);font-size:30px;letter-spacing:.12em;line-height:1.2}
+.brand span{color:var(--ink-2);font-size:13px}
+.feature{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);border:1.5px solid var(--ink);background:var(--paper-2);overflow:hidden}
+.fart{position:relative;min-height:300px;background:radial-gradient(60% 70% at 55% 60%, #c9cfc8 0%, #a9b6bd 45%, rgba(169,182,189,0) 75%), var(--paper-3);overflow:hidden}
+.fart .big{position:absolute;right:4%;bottom:0;height:96%;width:auto}
+.fart .vcal{position:absolute;left:16px;top:16px;writing-mode:vertical-rl;font-family:var(--brush);font-size:34px;letter-spacing:.2em;color:var(--ink);opacity:.8}
+.fart .sealtag{position:absolute;left:18px;bottom:16px;background:var(--seal);color:#f6e7c8;font-family:var(--brush);font-size:14px;padding:6px 5px;writing-mode:vertical-rl;letter-spacing:.2em;border-radius:2px}
+.ftext{padding:22px 22px 20px;display:flex;flex-direction:column;gap:10px}
+.ftext h3{font-family:var(--brush);font-size:44px;margin:0;letter-spacing:.12em;line-height:1.1}
+.ftext .tagline{font-family:var(--brush);font-size:21px;color:var(--wei);margin:0}
+.ftext p{margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{border:1px solid var(--rule);background:var(--card);padding:2px 8px;font-size:12px;border-radius:3px}
+.ftext .btn{align-self:flex-start;margin-top:auto}
+.annals-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.annals-h h3{margin:0;font-family:var(--brush);font-size:22px;letter-spacing:.08em}
+.annals{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:0;padding:0;list-style:none}
+.bat{border:1px solid var(--rule);background:var(--card);padding:10px 12px;display:flex;flex-direction:column;gap:2px;height:100%}
+.bat .yr{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.bat h4{margin:0;font-family:var(--brush);font-size:20px;letter-spacing:.04em}
+.bat p{margin:0;font-size:12.5px;color:var(--ink-2)}
+.bat .st{margin-top:6px;font-size:11.5px;align-self:flex-start;padding:0 6px;border:1px solid var(--rule);border-radius:3px;color:var(--ink-2)}
+.bat.open{border:1.5px solid var(--ink);background:var(--paper-2)}
+.bat.open .st{background:var(--seal);border-color:var(--seal);color:#f6e7c8}
+.bat.open button{margin-top:8px;align-self:flex-start}
+@container app (max-width:639px){
+  .feature{grid-template-columns:minmax(0,1fr)}
+  .fart{min-height:230px}
+  .ftext h3{font-size:36px}
+  .brand b{font-size:26px}
+}
+
+/* ---------- brief ---------- */
+.brief{padding:18px 16px 24px;max-width:1080px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px 22px}
+@container app (max-width:799px){.brief{grid-template-columns:minmax(0,1fr)}}
+.bcol{display:flex;flex-direction:column;gap:18px;min-width:0}
+.bhead h3{font-family:var(--brush);font-size:32px;margin:2px 0 4px;letter-spacing:.08em;line-height:1.15}
+.bhead p{margin:0;max-width:60ch}
+.sect-h{margin:0 0 8px;font-family:var(--brush);font-size:19px;letter-spacing:.08em;display:flex;align-items:baseline;gap:8px}
+.sect-h small{font-family:var(--sans);font-size:12px;color:var(--ink-2);letter-spacing:0}
+.letter{border:1.5px solid var(--ink);background:#efe3c3;padding:16px 18px 16px 60px;position:relative}
+.letter .env{position:absolute;left:14px;top:14px;bottom:14px;width:30px;background:var(--seal);color:#f6e7c8;writing-mode:vertical-rl;font-family:var(--brush);font-size:17px;letter-spacing:.3em;display:flex;align-items:center;justify-content:center}
+.letter blockquote{margin:0;font-family:var(--brush);font-size:19px;line-height:1.6}
+.letter cite{display:block;margin-top:6px;font-style:normal;font-size:12px;color:var(--ink-2)}
+.odds{display:flex;flex-direction:column;gap:10px}
+.odds-row{display:grid;grid-template-columns:70px minmax(0,1fr);gap:10px;align-items:start}
+.odds-row .lab{font-family:var(--brush);font-size:16px;line-height:1.2}
+.odds-row .lab small{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.dots{display:grid;grid-template-columns:repeat(20,minmax(0,1fr));gap:3px;max-width:340px}
+.dots i{display:block;aspect-ratio:1;border-radius:50%}
+.odds .foot{font-size:12px;color:var(--ink-2);margin:0}
+.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.gcard{appearance:none;border:1px solid var(--rule);background:var(--card);padding:0;cursor:pointer;display:flex;flex-direction:column;text-align:center;color:var(--ink);font:inherit}
+.gcard:hover{border-color:var(--ink)}
+.gcard svg{width:100%;aspect-ratio:100/120;display:block;border-bottom:3px solid var(--fc)}
+.gcard b{font-family:var(--brush);font-size:17px;font-weight:700;padding:4px 4px 0}
+.gcard small{font-size:11px;color:var(--ink-2);padding:0 4px 6px}
+.chapters{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.chapters li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--rule)}
+.chapters .no{font-family:var(--brush);font-size:24px;text-align:center;color:var(--seal)}
+.chapters b{font-family:var(--brush);font-size:17px;display:block}
+.chapters span{font-size:12.5px;color:var(--ink-2)}
+.chapters button{font-size:12.5px;padding:5px 10px}
+.startbar{position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;padding:10px 16px;background:var(--paper-2);border-top:1px solid var(--rule);z-index:2}
+.startbar .lore{display:flex;align-items:center;gap:8px;font-size:13px}
+
+/* ---------- replay ---------- */
+.replay{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 340px;grid-template-rows:minmax(0,1fr) auto}
+.mapbox{grid-column:1;grid-row:1;position:relative;min-height:0;background:#e0cfa6;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.mapbox svg.map{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+.mapbox svg.map:active{cursor:grabbing}
+.mapbox .unit{cursor:pointer}
+.grain{position:absolute;inset:0;pointer-events:none;background-image:var(--grain);mix-blend-mode:multiply;opacity:.6}
+.hud-tl{position:absolute;left:10px;top:10px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;pointer-events:none;max-width:60%}
+.chip{background:rgba(236,224,194,.93);border:1px solid var(--ink);padding:3px 10px;font-family:var(--brush);font-size:16px;line-height:1.35}
+.chip.small{font-family:var(--sans);font-size:12px;padding:2px 8px;border-color:var(--rule)}
+.hud-tr{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px}
+.cbtn{appearance:none;width:36px;height:36px;border:1px solid var(--ink);background:rgba(236,224,194,.93);color:var(--ink);display:grid;place-items:center;cursor:pointer;font:inherit;font-size:12px;padding:0}
+.cbtn svg{width:18px;height:18px}
+.cbtn[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.tbar{grid-column:1;grid-row:2;display:flex;align-items:center;gap:12px;padding:8px 12px 10px;border-top:1px solid var(--rule);background:var(--paper-2);flex-wrap:wrap}
+.play{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:var(--ink);color:var(--paper);display:grid;place-items:center;cursor:pointer}
+.play svg{width:18px;height:18px;fill:currentColor}
+.tlm{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:2px}
+.tlhead{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.tlhead .chap{font-family:var(--brush);font-size:16px;font-weight:700}
+.tlhead .clock{font-size:12.5px;color:var(--ink-2)}
+.track{position:relative;padding-top:16px;padding-bottom:12px}
+.bands{position:absolute;left:8px;right:8px;top:0;height:14px}
+.band{position:absolute;top:0;height:14px;border-left:1px solid var(--ink);padding-left:4px;font-family:var(--brush);font-size:12px;line-height:14px;color:var(--ink-2);white-space:nowrap;overflow:hidden}
+.band .full{display:inline}
+.band .short{display:none}
+#tl{width:100%;margin:0;accent-color:var(--seal);height:20px;display:block}
+.ticks{position:absolute;left:8px;right:8px;bottom:0;height:10px}
+.tick{position:absolute;top:0;transform:translateX(-50%);width:12px;height:10px;border:0;padding:0;background:transparent;cursor:pointer}
+.tick::before{content:"";position:absolute;left:3px;top:1px;width:6px;height:6px;transform:rotate(45deg);background:var(--ink-2);opacity:.5}
+.tick.on::before{background:var(--seal);opacity:1}
+.tick.cut::before{width:7px;height:7px;left:2.5px}
+.side{grid-column:2;grid-row:1 / span 2;border-left:1px solid var(--rule);background:var(--paper);overflow:auto;display:flex;flex-direction:column;min-height:0}
+.tabs{display:none}
+.pane{padding:14px;border-bottom:1px solid var(--rule)}
+.pane h3{margin:0 0 8px;font-size:11.5px;letter-spacing:.16em;color:var(--ink-2);font-weight:500}
+.uhead{display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;align-items:center}
+.uport{appearance:none;padding:0;border:1.5px solid var(--ink);background:none;cursor:pointer;display:block}
+.uport svg{width:100%;aspect-ratio:100/120;display:block}
+.ufac{font-size:12px;font-weight:700}
+.uhead h4{margin:0;font-family:var(--brush);font-size:26px;line-height:1.15}
+.uhead h4 small{font-size:14px;color:var(--ink-2);margin-left:4px}
+.uhead p{margin:2px 0 0;font-size:12.5px;color:var(--ink-2)}
+.ustats{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:6px 10px;align-items:center;margin:12px 0 0;font-size:13px}
+.ustats dt{color:var(--ink-2)}
+.ustats dd{margin:0}
+.ustats .v{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.ustats .status{grid-column:2 / span 2}
+.bar{display:block;height:6px;background:var(--paper-3);overflow:hidden}
+.bar i{display:block;height:100%}
+.link{appearance:none;border:0;background:none;color:var(--jade);font:inherit;font-size:13px;font-weight:700;padding:8px 0 0;cursor:pointer}
+.frow{display:grid;grid-template-columns:48px minmax(0,1fr) 70px;gap:8px;align-items:center;font-size:13px;margin-bottom:6px}
+.frow b{font-family:var(--brush);font-size:15px}
+.frow .v{font-family:var(--mono);font-size:12px;text-align:right}
+.ratio{margin:4px 0 0;font-size:12.5px;color:var(--ink-2)}
+.log ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.log li button{appearance:none;border:0;border-left:3px solid transparent;background:none;color:var(--ink);font:inherit;text-align:left;display:block;width:100%;padding:7px 8px 7px 10px;cursor:pointer}
+.log li button:hover{background:var(--paper-2)}
+.log li.future{opacity:.42}
+.log li.cur button{border-left-color:var(--seal);background:var(--paper-2)}
+.ev-t{display:flex;justify-content:space-between;gap:8px;font-family:var(--brush);font-size:16px;font-weight:700}
+.ev-t span{font-family:var(--sans);font-weight:400;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+.ev-x{display:block;font-size:12.5px;color:var(--ink-2);margin-top:2px}
+.ev-s{display:inline-block;margin-top:3px;font-size:11px;padding:0 5px;border:1px solid var(--rule);color:var(--ink-2)}
+.cutin{position:absolute;left:12px;right:12px;bottom:12px;max-width:620px;display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;background:rgba(240,229,201,.97);border:1.5px solid var(--ink);padding:10px 14px 10px 10px;box-shadow:0 8px 26px rgba(40,28,16,.3);transition:opacity .3s,transform .3s;cursor:pointer;z-index:3}
+.cutin.hide{opacity:0;transform:translateY(16px);pointer-events:none}
+.cutin svg{width:92px;aspect-ratio:100/120;display:block;border:1px solid var(--ink)}
+.ci-eyebrow{margin:0;font-size:11.5px;letter-spacing:.14em;color:var(--seal)}
+.ci-title{margin:0;font-family:var(--brush);font-size:28px;line-height:1.2;letter-spacing:.06em}
+.ci-q{margin:4px 0 2px;font-family:var(--brush);font-size:16px;line-height:1.5}
+.ci-src{margin:0;font-size:11.5px;color:var(--ink-2)}
+@container app (max-width:1099px){
+  .replay{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto minmax(0,300px)}
+  .side{grid-column:1;grid-row:3;border-left:0;border-top:1px solid var(--rule);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);overflow:hidden}
+  .pane[data-pane="unit"]{grid-column:1;grid-row:1 / span 2;overflow:auto;border-right:1px solid var(--rule);border-bottom:0}
+  .pane[data-pane="forces"]{grid-column:2;grid-row:1}
+  .pane[data-pane="log"]{grid-column:2;grid-row:2;overflow:auto;border-bottom:0}
+}
+@container app (max-width:639px){
+  .replay{grid-template-rows:minmax(0,1fr) auto minmax(0,40%)}
+  .side{display:flex;flex-direction:column;overflow:hidden}
+  .tabs{display:flex;flex:none;border-bottom:1px solid var(--rule);background:var(--paper-2)}
+  .tabs button{flex:1;appearance:none;border:0;border-bottom:2px solid transparent;background:none;font:inherit;font-size:14px;padding:9px 0;cursor:pointer;color:var(--ink-2)}
+  .tabs button[aria-selected="true"]{border-bottom-color:var(--ink);color:var(--ink);font-weight:700}
+  .pane{display:none;flex:1;min-height:0;overflow:auto;border:0}
+  .pane.on{display:block}
+  .pane h3{display:none}
+  .speed{display:none}
+  .tbar{gap:10px;padding:6px 10px 8px}
+  .play{width:40px;height:40px}
+  .band .full{display:none}
+  .band .short{display:inline}
+  .uhead{grid-template-columns:64px minmax(0,1fr)}
+  .uhead h4{font-size:22px}
+  .cutin{grid-template-columns:62px minmax(0,1fr);left:8px;right:8px;bottom:8px;padding:8px 10px 8px 8px}
+  .cutin svg{width:62px}
+  .ci-title{font-size:21px}
+  .ci-q{font-size:14px}
+  .hud-tl .chip{font-size:14px}
+}
+
+/* ---------- overlays ---------- */
+.pop{position:absolute;right:8px;top:54px;z-index:15;background:var(--card);border:1.5px solid var(--ink);padding:12px 14px;width:min(280px, calc(100% - 16px));display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 28px rgba(40,28,16,.28)}
+.pop .row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px}
+.pop h3{margin:0;font-family:var(--brush);font-size:17px}
+.modal{position:absolute;inset:0;background:rgba(29,24,20,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.dialog{background:var(--paper);background-image:var(--grain);border:1.5px solid var(--ink);max-width:760px;width:100%;max-height:100%;overflow:auto;display:grid;grid-template-columns:240px minmax(0,1fr);position:relative}
+.dport{border-right:1px solid var(--rule);background:var(--paper-2)}
+.dport svg{width:100%;aspect-ratio:100/120;display:block}
+.dport .artnote{padding:10px 12px;font-size:12px;color:var(--ink-2);border-top:1px solid var(--rule)}
+.dport .artnote b{display:block;color:var(--ink);font-size:11.5px;letter-spacing:.12em;font-weight:700;margin-bottom:2px}
+.dbody{padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.dbody h3{margin:0;font-family:var(--brush);font-size:34px;line-height:1.1;letter-spacing:.06em}
+.dbody h3 small{font-size:16px;color:var(--ink-2);margin-left:6px}
+.dmeta{margin:0;font-size:13px;color:var(--ink-2)}
+.dstats{display:grid;grid-template-columns:40px minmax(0,1fr) 30px;gap:6px 10px;align-items:center;font-size:13px}
+.dstats .v{font-family:var(--mono);font-size:12px;text-align:right}
+.dstats-note{font-size:11.5px;color:var(--ink-2);margin:-6px 0 0}
+.dbio{margin:0;font-size:14px;line-height:1.7;max-width:60ch}
+.anec{margin:0;border-left:3px solid var(--seal);padding:4px 0 4px 12px;font-family:var(--brush);font-size:16px}
+.anec cite{display:block;font-family:var(--sans);font-style:normal;font-size:12px;color:var(--ink-2);margin-top:2px}
+.dclose{position:absolute;right:6px;top:6px}
+@container app (max-width:639px){
+  .modal{align-items:flex-end;padding:0}
+  .dialog{grid-template-columns:minmax(0,1fr);max-height:92%;border-width:1.5px 0 0}
+  .dport{display:grid;grid-template-columns:120px minmax(0,1fr);border-right:0;border-bottom:1px solid var(--rule)}
+  .dport .artnote{border-top:0;align-self:end}
+  .dbody h3{font-size:28px}
+}
+@media (prefers-reduced-motion: reduce){ .cutin{transition:none} }
+</style>
+
+<svg id="gdefs" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"></svg>
+
+<div class="page">
+  <header class="doc-head">
+    <div>
+      <h1>逍遙津 UI 原型</h1>
+      <p>三國戰役誌（暫名）第一場戰役。絹本水墨地圖、旗牌合一兵團、插畫風將領。切換裝置看桌機、平板、手機版面；切換畫面看各頁。</p>
+    </div>
+    <div class="devbar">
+      <div class="dgroup dev-only"><span class="dlabel">裝置</span>
+        <div class="dseg" id="seg-dev"><button type="button" data-v="desktop">桌機</button><button type="button" data-v="tablet">平板</button><button type="button" data-v="phone">手機</button></div></div>
+      <div class="dgroup"><span class="dlabel">畫面</span>
+        <div class="dseg" id="seg-screen"><button type="button" data-v="menu">戰役選單</button><button type="button" data-v="brief">戰役簡介</button><button type="button" data-v="replay">重播</button><button type="button" data-v="bio">將領列傳</button></div></div>
+    </div>
+  </header>
+
+  <div class="stagewrap">
+    <div class="device" id="device" data-dev="desktop">
+      <div class="app" id="app">
+        <div class="appbar">
+          <button type="button" class="ibtn" id="btn-back" aria-label="返回"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 4 6.5 10l6 6"/></svg></button>
+          <h2 id="app-title">三國戰役誌</h2>
+          <button type="button" class="ibtn" id="btn-set" aria-label="設定" aria-expanded="false"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 5.5h14M3 10h14M3 14.5h14"/><circle cx="7" cy="5.5" r="1.8" fill="currentColor"/><circle cx="13" cy="10" r="1.8" fill="currentColor"/><circle cx="8.5" cy="14.5" r="1.8" fill="currentColor"/></svg></button>
+        </div>
+
+        <!-- menu -->
+        <section class="screen" data-screen="menu" hidden>
+          <div class="menu">
+            <div class="brand"><b>三國戰役誌</b><span>歷史重播・第一卷（暫名）</span></div>
+            <article class="feature">
+              <div class="fart" aria-hidden="true">
+                <div class="vcal">八百破十萬</div>
+                <svg class="big" viewBox="0 0 100 120"><use href="#pt-zhangliao"/></svg>
+                <div class="sealtag">可遊玩</div>
+              </div>
+              <div class="ftext">
+                <span class="eyebrow">建安二十年・公元 215 年</span>
+                <h3>逍遙津</h3>
+                <p class="tagline">張遼八百人，直衝孫權十萬大軍</p>
+                <p>曹操西征漢中，孫權趁虛圍攻合肥。城中只有七千守軍，張遼卻決定主動出擊。</p>
+                <div class="chips"><span>四章</span><span>約 5 分鐘</span><span>入門</span><span>正史・演義</span></div>
+                <button type="button" class="btn primary" data-go="brief">進入戰役</button>
+              </div>
+            </article>
+            <div class="annals-h"><h3>戰役年表</h3><span class="eyebrow">依年代排列</span></div>
+            <ol class="annals" id="annals"></ol>
+          </div>
+        </section>
+
+        <!-- brief -->
+        <section class="screen" data-screen="brief" hidden>
+          <div class="brief">
+            <div class="bcol">
+              <div class="bhead">
+                <span class="eyebrow">建安二十年八月・公元 215 年</span>
+                <h3>合肥・逍遙津之戰</h3>
+                <p>曹操親征漢中張魯，東線空虛。孫權親率十萬大軍北上，圍攻合肥。守將張遼、李典、樂進手下只有七千餘人。曹操臨行前留下一封教書，封上寫著「賊至乃發」。</p>
+              </div>
+              <div class="letter">
+                <div class="env" aria-hidden="true">賊至乃發</div>
+                <blockquote>若孫權至者，張、李將軍出戰；樂將軍守，護軍勿得與戰。</blockquote>
+                <cite>曹操教書・《三國志・張遼傳》</cite>
+              </div>
+              <div>
+                <h4 class="sect-h">兵力對比 <small>每點 = 1,000 人</small></h4>
+                <div class="odds" id="odds"></div>
+              </div>
+            </div>
+            <div class="bcol">
+              <div>
+                <h4 class="sect-h">登場將領 <small>點頭像看列傳</small></h4>
+                <div class="roster" id="roster"></div>
+              </div>
+              <div>
+                <h4 class="sect-h">章節</h4>
+                <ol class="chapters" id="chapters"></ol>
+              </div>
+            </div>
+          </div>
+          <div class="startbar">
+            <div class="lore"><span>史觀</span><div class="seg" data-lore-seg><button type="button" data-v="history">正史</button><button type="button" data-v="novel">演義</button></div></div>
+            <button type="button" class="btn primary" data-start="0">開始重播</button>
+          </div>
+        </section>
+
+        <!-- replay -->
+        <section class="screen replay-screen" data-screen="replay" hidden>
+          <div class="replay">
+            <div class="mapbox" id="mapbox">
+              <svg class="map" id="map" viewBox="0 0 1000 620" role="img" aria-label="合肥逍遙津戰場地圖"><g id="terrain"></g><g id="dyn"></g></svg>
+              <div class="grain"></div>
+              <div class="hud-tl"><span class="chip" id="hud-chap"></span><span class="chip small" id="hud-time"></span></div>
+              <div class="hud-tr">
+                <button type="button" class="cbtn" id="cam-follow" aria-pressed="true" aria-label="鏡頭跟隨劇情" title="鏡頭跟隨"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="6"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><path d="M10 1.5v3M10 15.5v3M1.5 10h3M15.5 10h3"/></svg></button>
+                <button type="button" class="cbtn" id="cam-in" aria-label="放大"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg></button>
+                <button type="button" class="cbtn" id="cam-out" aria-label="縮小"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10h12"/></svg></button>
+                <button type="button" class="cbtn" id="cam-all" aria-label="看全圖" title="全圖">全圖</button>
+              </div>
+              <div class="cutin hide" id="cutin" role="status" aria-live="polite"></div>
+            </div>
+            <div class="tbar">
+              <button type="button" class="play" id="play" aria-label="播放"></button>
+              <div class="tlm">
+                <div class="tlhead"><span class="chap" id="tb-chap"></span><span class="clock" id="tb-clock"></span></div>
+                <div class="track">
+                  <div class="bands" id="bands"></div>
+                  <input type="range" id="tl" min="0" max="4" step="0.001" value="1.55" aria-label="時間軸">
+                  <div class="ticks" id="ticks"></div>
+                </div>
+              </div>
+              <div class="seg speed" id="seg-speed"><button type="button" data-v="1">1×</button><button type="button" data-v="2">2×</button><button type="button" data-v="4">4×</button></div>
+            </div>
+            <aside class="side">
+              <div class="tabs" role="tablist">
+                <button type="button" role="tab" data-tab="unit" aria-selected="true">兵團</button>
+                <button type="button" role="tab" data-tab="log" aria-selected="false">戰報</button>
+                <button type="button" role="tab" data-tab="forces" aria-selected="false">兵力</button>
+              </div>
+              <div class="pane on" data-pane="unit"><h3>兵團</h3><div id="unit-pane"></div></div>
+              <div class="pane" data-pane="forces"><h3>各方兵力</h3><div id="forces"></div></div>
+              <div class="pane log" data-pane="log"><h3>戰報</h3><ol id="log"></ol></div>
+            </aside>
+          </div>
+        </section>
+
+        <div class="pop" id="pop" hidden>
+          <h3>設定</h3>
+          <div class="row"><span>史觀</span><div class="seg" data-lore-seg><button type="button" data-v="history">正史</button><button type="button" data-v="novel">演義</button></div></div>
+          <div class="row"><span>劇情演出</span><div class="seg" id="set-cut"><button type="button" data-v="1">開</button><button type="button" data-v="0">關</button></div></div>
+          <div class="row"><span>行軍路線</span><div class="seg" id="set-trail"><button type="button" data-v="1">顯示</button><button type="button" data-v="0">隱藏</button></div></div>
+          <div class="row"><span>播放速度</span><div class="seg" id="set-speed"><button type="button" data-v="1">1×</button><button type="button" data-v="2">2×</button><button type="button" data-v="4">4×</button></div></div>
+        </div>
+        <div class="modal" id="modal" hidden></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <section>
+      <h2>版面</h2>
+      <ul>
+        <li><b>桌機（寬 1100 以上）</b>：地圖加右側資訊欄，時間軸在地圖下方。</li>
+        <li><b>平板（640–1099）</b>：地圖在上；下方左欄是兵團，右欄是兵力與戰報。</li>
+        <li><b>手機（640 以下）</b>：地圖佔上半，時間軸精簡；下方分頁切換兵團、戰報、兵力；列傳從底部彈出。</li>
+      </ul>
+    </section>
+    <section>
+      <h2>操作</h2>
+      <ul>
+        <li>拖曳平移地圖，滾輪或「＋／－」縮放；「跟隨」讓鏡頭自動追劇情。</li>
+        <li>點兵團看兵力、士氣、狀態；點頭像或「查看列傳」看人物。</li>
+        <li>播放到關鍵事件會跳出劇情演出，可在設定中關閉；點一下立即繼續。</li>
+      </ul>
+    </section>
+    <section>
+      <h2>美術與資料</h2>
+      <ul>
+        <li>將領頭像是<b>向量暫代圖</b>，列傳裡附「插畫設定」，正式版交給繪師依設定繪製。</li>
+        <li>兵力數字與部分部署是依史料的遊戲化推估；戰報引文標明出處。</li>
+        <li>地理為示意，依「合肥城、施水、逍遙津、巢湖」的相對位置繪製。</li>
+      </ul>
+    </section>
+  </div>
+</div>
+
+<script>
+(() => {
+const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const INK = '#2b241b', HAIR = '#1f1a16';
+const BRUSH = "'LXGW WenKai TC','Kaiti TC','STKaiti','Noto Serif TC',serif";
+const FC = {wei:'#2c4a7c', wu:'#a3301f'};
+const FNAME = {wei:'曹魏', wu:'孫吳'};
+
+/* ---------- helpers ---------- */
+const hx = h => [1,3,5].map(i => parseInt(h.slice(i,i+2),16));
+const toHex = a => '#' + a.map(v => Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');
+const mix = (a,b,t) => { const A = hx(a), B = hx(b); return toHex(A.map((v,i) => v + (B[i]-v)*t)); };
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const clamp01 = v => clamp(v,0,1);
+const lerp = (a,b,t) => a + (b-a)*t;
+const f1 = n => (Math.round(n*10)/10).toString();
+function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function smooth(pts, move=true){
+  let d = `${move?'M':'L'}${f1(pts[0][0])},${f1(pts[0][1])}`;
+  for (let i=0;i<pts.length-1;i++){
+    const p0=pts[i-1]||pts[i], p1=pts[i], p2=pts[i+1], p3=pts[i+2]||p2;
+    d += ` C${f1(p1[0]+(p2[0]-p0[0])/6)},${f1(p1[1]+(p2[1]-p0[1])/6)} ${f1(p2[0]-(p3[0]-p1[0])/6)},${f1(p2[1]-(p3[1]-p1[1])/6)} ${f1(p2[0])},${f1(p2[1])}`;
+  }
+  return d;
+}
+function fmtStr(n){ n = Math.round(n); if (n>=10000) return f1(n/10000)+'萬'; return n.toLocaleString('en-US'); }
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const $ = id => document.getElementById(id);
+
+/* ---------- generals ---------- */
+const GEN = {
+  zhangliao:{name:'張遼', zi:'文遠', from:'雁門馬邑', f:'wei', sur:'張', role:'合肥守將', stats:[92,94,78],
+    look:{armor:'wei', helm:'helmet', plume:'#b3321f', beard:'full', brow:'stern', skin:'#e0b58b', weapon:'ji'},
+    bio:{history:'原為呂布部將，降曹後屢立戰功。建安二十年與李典、樂進屯合肥，以八百敢死士衝擊孫權大軍，再於逍遙津追擊，幾乎擒獲孫權。', novel:'演義第六十七回「張遼威震逍遙津」。此戰之後，江南人聞張遼之名，小兒也不敢夜啼。'},
+    anec:{text:'次年曹操至合肥，巡視張遼作戰之處，歎息良久。', src:'《三國志・張遼傳》'},
+    art:'北方武將，四十餘歲。兜鍪紅纓、玄色札甲，手持長戟；神情剛毅，蓄鬚。代表畫面：披甲持戟、大呼自名衝入敵陣。'},
+  lidian:{name:'李典', zi:'曼成', from:'山陽鉅野', f:'wei', sur:'李', role:'合肥守將', stats:[80,72,85],
+    look:{armor:'wei', helm:'cap', beard:'goatee', brow:'calm', skin:'#e8c29c'},
+    bio:{history:'好學問，敬重儒雅之士，不與諸將爭功。與張遼素來不和，此戰卻以國事為重，率眾隨張遼出擊。', novel:'演義中與張遼、樂進同守合肥，共破孫權。'},
+    anec:{text:'「此國家大事，顧君計何如耳，吾可以私憾而忘公義乎！」', src:'《三國志・李典傳》'},
+    art:'儒將，三十餘歲。冠帶整齊，甲外罩袍；神情沉穩，短鬚。與張遼的剛猛形成對比。'},
+  yuejin:{name:'樂進', zi:'文謙', from:'陽平衛國', f:'wei', sur:'樂', role:'合肥守將', stats:[84,86,62],
+    look:{armor:'wei', helm:'helmet', plume:'#2f5b57', beard:'short', brow:'fierce', skin:'#d9ab80'},
+    bio:{history:'容貌短小，以膽烈從曹操，每戰先登。合肥之戰奉曹操之教留守城池。', novel:'演義中與張遼、李典同守合肥。'},
+    anec:{text:'曹操教書：「樂將軍守，護軍勿得與戰。」', src:'《三國志・張遼傳》'},
+    art:'身材短小精悍的猛將，甲冑完整，眼神兇悍。站在城頭的守將形象。'},
+  sunquan:{name:'孫權', zi:'仲謀', from:'吳郡富春', f:'wu', sur:'孫', role:'吳軍主帥', stats:[88,70,86],
+    look:{armor:'wu', helm:'crown', beard:'purple', brow:'stern', skin:'#e6be95', eye:'#3f7a4f', jaw:'square'},
+    bio:{history:'孫堅次子，繼兄孫策據有江東。趁曹操西征，親率十萬大軍圍合肥，十餘日不下；撤軍時在逍遙津北遭張遼突襲，險些被擒。', novel:'演義形容他「碧眼紫髯」。逍遙津被張遼追殺，聽從谷利之言，躍馬飛過小師橋。'},
+    anec:{text:'劉琬評孫氏兄弟：「惟中弟孝廉，形貌奇偉，骨體不恆，有大貴之表。」', src:'《三國志・吳主傳》'},
+    art:'三十出頭的主君。方頤大口、目有精光；演義形象為碧眼紫髯。將軍冠、紅袍甲。代表畫面：躍馬過斷橋。'},
+  lvmeng:{name:'呂蒙', zi:'子明', from:'汝南富陂', f:'wu', sur:'呂', role:'吳軍將領', stats:[90,80,88],
+    look:{armor:'wu', helm:'helmet', plume:'#b3321f', beard:'full', brow:'calm', skin:'#dcae84'},
+    bio:{history:'少年從軍，後發憤讀書，學識大進。合肥撤軍時留在逍遙津北，與凌統等人拚死護衛孫權。', novel:'演義中隨孫權攻合肥，逍遙津一戰亦在孫權左右。'},
+    anec:{text:'魯肅拊其背曰：「非復吳下阿蒙！」', src:'《江表傳》（裴注引）'},
+    art:'三十餘歲的實戰派將領。甲冑樸實、目光銳利，蓄鬚；帶一點讀書人的沉穩。'},
+  ganning:{name:'甘寧', zi:'興霸', from:'巴郡臨江', f:'wu', sur:'甘', role:'吳軍將領', stats:[80,92,70],
+    look:{armor:'wu', helm:'wild', beard:'stubble', brow:'fierce', skin:'#cf9e74', bells:true},
+    bio:{history:'少年時是遊俠首領，後歸孫權，屢立戰功。合肥撤軍時與呂蒙、凌統、蔣欽等留在逍遙津北，力戰護主。', novel:'演義中另有濡須「百騎劫魏營」一段，名震一時。'},
+    anec:{text:'「負毦帶鈴，民聞鈴聲，即知是寧。」', src:'《三國志・甘寧傳》'},
+    art:'野性十足。背插雉羽（毦）、身帶銅鈴，錦衣配甲，不戴盔。'},
+  lingtong:{name:'凌統', zi:'公績', from:'吳郡餘杭', f:'wu', sur:'凌', role:'吳軍將領', stats:[82,86,68],
+    look:{armor:'wu', helm:'band', beard:'none', brow:'stern', skin:'#e8c29c', wound:true},
+    bio:{history:'凌操之子，年少即接掌父兵。逍遙津率親近三百人殺入重圍，護孫權脫險；左右全數戰死，本人負傷，披甲游水而還。', novel:'演義中凌統引三百餘騎死戰，手下盡皆戰死。'},
+    anec:{text:'「統率親近三百人陷圍，扶扞權出。」', src:'《三國志・凌統傳》'},
+    art:'二十多歲的青年將領。紅抹額、神情決絕，臉上帶傷。代表畫面：斷橋前回身死戰。'},
+  jiangqin:{name:'蔣欽', zi:'公奕', from:'九江壽春', f:'wu', sur:'蔣', role:'吳軍將領', stats:[78,82,66],
+    look:{armor:'wu', helm:'helmet', plume:'#6b4a2a', beard:'short', brow:'calm', skin:'#dcae84'},
+    bio:{history:'孫策舊將。合肥撤軍時留在逍遙津北，張遼來襲時力戰有功，戰後升盪寇將軍。', novel:'演義中隨孫權征戰江東。'},
+    anec:{text:'「從征合肥，魏將張遼襲權於津北，欽力戰有功。」', src:'《三國志・蔣欽傳》'},
+    art:'中年武將，甲冑厚重，面容敦厚，短鬚。'},
+  heqi:{name:'賀齊', zi:'公苗', from:'會稽山陰', f:'wu', sur:'賀', role:'吳軍將領', stats:[80,76,74],
+    look:{armor:'gold', helm:'helmet', plume:'#d4a73a', beard:'goatee', brow:'calm', skin:'#e6be95', helmColor:'#8a6d2c'},
+    bio:{history:'以平定山越聞名。孫權撤退時率三千人在津南接應。', novel:'演義中著墨不多。'},
+    anec:{text:'「齊性奢綺，尤好軍事，兵甲器械極為精好。」', src:'《三國志・賀齊傳》'},
+    art:'衣甲華麗的將領：金飾鎧甲、華美披風、精良兵器，一眼看得出講究。'},
+  wujun:{name:'吳軍諸部', short:'諸部', sur:'吳', f:'wu', roster:false,
+    look:{armor:'wu', helm:'helmet', plume:'#6b4a2a', beard:'none', brow:'calm', skin:'#dcae84'}},
+};
+const ROSTER = ['zhangliao','lidian','yuejin','sunquan','lvmeng','ganning','lingtong','jiangqin','heqi'];
+const ARMOR = {wei:{dark:'#22314a', trim:'#b08a2e'}, wu:{dark:'#5a1d15', trim:'#c9a13b'}, gold:{dark:'#6b5220', trim:'#e0c060'}};
+
+function portrait(id){
+  const g = GEN[id], L = g.look, A = ARMOR[L.armor], sk = L.skin, eye = L.eye || '#1d1712';
+  const ink = `stroke="${INK}" stroke-width="1.1" stroke-linejoin="round"`;
+  const helm = L.helmColor || '#44474c';
+  let o = `<rect width="100" height="120" fill="url(#wash-${g.f})"/>`;
+  o += `<path d="M0,98 C16,82 30,92 44,80 C60,68 78,78 100,60 L100,120 L0,120Z" fill="${INK}" opacity=".08"/>`;
+  if (L.weapon==='ji') o += `<path d="M16,120 L84,8" stroke="#4a3826" stroke-width="3" stroke-linecap="round"/><path d="M84,8 L90,-2 L88,10Z" fill="#9aa0a4" ${ink}/><path d="M79,17 Q92,16 95,28 Q86,22 76,22Z" fill="#9aa0a4" ${ink}/><path d="M80,15 l-6,-4" stroke="#b3321f" stroke-width="2.4" stroke-linecap="round"/>`;
+  if (L.helm==='wild') o += `<path d="M42,30 C34,16 24,6 10,0" stroke="#7a5a3a" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-dasharray="5 2"/><path d="M58,28 C68,14 80,6 94,2" stroke="#8a6a44" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-dasharray="5 2"/>`;
+  o += `<path d="M4,120 C6,96 24,86 50,86 C76,86 94,96 96,120Z" fill="url(#lam-${L.armor})" ${ink}/>`;
+  o += `<path d="M8,108 C12,93 25,88 35,90 C31,99 22,105 8,108Z" fill="${A.dark}" ${ink}/><path d="M92,108 C88,93 75,88 65,90 C69,99 78,105 92,108Z" fill="${A.dark}" ${ink}/>`;
+  if (L.helm==='cap') o += `<path d="M30,120 L40,87 L50,104 L60,87 L70,120Z" fill="#5d6b5a" ${ink}/>`;
+  if (L.helm==='wild') o += `<path d="M30,120 L40,87 L50,104 L60,87 L70,120Z" fill="#6a4a7a" ${ink}/><path d="M34,112 l6,-4 l6,4 M54,112 l6,-4 l6,4" stroke="#d6b25a" stroke-width="1" fill="none"/>`;
+  o += `<path d="M40,86 L50,100 L60,86Z" fill="#efe6d0" ${ink}/><path d="M38,87 L50,103 L62,87" fill="none" stroke="${A.trim}" stroke-width="1.6"/>`;
+  o += `<path d="M44,68 L44,88 Q50,92 56,88 L56,68Z" fill="${mix(sk,'#000000',.14)}"/>`;
+  o += `<ellipse cx="35.5" cy="51" rx="3" ry="5" fill="${sk}" ${ink}/><ellipse cx="64.5" cy="51" rx="3" ry="5" fill="${sk}" ${ink}/>`;
+  const jaw = L.jaw==='square' ? 'M34,46 C34,28 66,28 66,46 C66,62 61,72 50,74 C39,72 34,62 34,46Z' : 'M36,46 C36,29 64,29 64,46 C64,61 58,71 50,73 C42,71 36,61 36,46Z';
+  o += `<path d="${jaw}" fill="${sk}" ${ink}/>`;
+  o += `<path d="M37,56 C39,67 45,72 50,73 C45,69 40,63 37,56Z" fill="#000" opacity=".07"/>`;
+  o += `<ellipse cx="41" cy="58" rx="4" ry="2" fill="#c8705a" opacity=".16"/><ellipse cx="59" cy="58" rx="4" ry="2" fill="#c8705a" opacity=".16"/>`;
+  o += `<path d="M40.5,50 Q44.5,47 48.5,50 Q44.5,52 40.5,50Z" fill="#f4ecdc" stroke="${INK}" stroke-width=".9"/><circle cx="44.6" cy="49.9" r="1.55" fill="${eye}"/>`;
+  o += `<path d="M51.5,50 Q55.5,47 59.5,50 Q55.5,52 51.5,50Z" fill="#f4ecdc" stroke="${INK}" stroke-width=".9"/><circle cx="55.4" cy="49.9" r="1.55" fill="${eye}"/>`;
+  const BR = {stern:['M39.5,45.2 L48,46.6 M60.5,45.2 L52,46.6',2.2], fierce:['M38.5,43.4 L48,46.8 M61.5,43.4 L52,46.8',2.6], calm:['M39.5,45.5 Q44,44 48,45.3 M60.5,45.5 Q56,44 52,45.3',1.8]}[L.brow];
+  o += `<path d="${BR[0]}" stroke="${HAIR}" stroke-width="${BR[1]}" stroke-linecap="round" fill="none"/>`;
+  o += `<path d="M50,51 Q48.4,56.5 48.6,58.6 Q50,59.8 51.9,58.8" fill="none" stroke="${INK}" stroke-width=".9"/>`;
+  o += `<path d="M45.5,64.6 Q50,66.2 54.5,64.6" fill="none" stroke="${INK}" stroke-width="1"/>`;
+  const mous = c => `<path d="M43,62.6 Q46.5,60 50,61.6 Q53.5,60 57,62.6 Q53.5,62 50,62.8 Q46.5,62 43,62.6Z" fill="${c}"/>`;
+  if (L.beard==='full') o += mous(HAIR) + `<path d="M39.5,63 Q41,79 50,83 Q59,79 60.5,63 Q56.5,69.5 50,70 Q43.5,69.5 39.5,63Z" fill="${HAIR}"/>`;
+  if (L.beard==='short') o += mous(HAIR) + `<path d="M44,66.5 Q50,74 56,66.5 Q50,69 44,66.5Z" fill="${HAIR}"/>`;
+  if (L.beard==='goatee') o += mous(HAIR) + `<path d="M47.2,67 Q50,77 52.8,67 Q50,68.4 47.2,67Z" fill="${HAIR}"/>`;
+  if (L.beard==='purple') o += mous('#5c3566') + `<path d="M37.5,61 Q39,83 50,88 Q61,83 62.5,61 Q57.5,69.5 50,70 Q42.5,69.5 37.5,61Z" fill="#5c3566"/><path d="M44,72 Q46,80 48,85 M50,71 V86 M56,72 Q54,80 52,85" stroke="#8a5a96" stroke-width=".8" fill="none"/>`;
+  if (L.beard==='stubble') o += `<path d="M38,58 C40,68 45,72.5 50,73 C55,72.5 60,68 62,58 C58,64 54,66 50,66 C46,66 42,64 38,58Z" fill="${HAIR}" opacity=".22"/>`;
+  if (L.wound) o += `<path d="M58,55 L63.5,51 M59.5,57.5 L63,55" stroke="#9c2a1c" stroke-width="1.2" stroke-linecap="round"/>`;
+  const hairBase = `<path d="M36,47 C33,26 67,26 64,47 C62,37 56,33.5 50,33.5 C44,33.5 38,37 36,47Z" fill="${HAIR}"/>`;
+  if (L.helm==='helmet') o += `<path d="M32,48 C29.5,20 70.5,20 68,48 L64.5,46 C62.5,36 37.5,36 35.5,46Z" fill="${helm}" ${ink}/><path d="M34.5,40 Q50,33 65.5,40" stroke="${A.trim}" stroke-width="2" fill="none"/><path d="M32,48 L33,63 L37.5,61 L35.5,46Z M68,48 L67,63 L62.5,61 L64.5,46Z" fill="${helm}" ${ink}/><path d="M50,22 V35" stroke="${INK}" stroke-width="1"/><path d="M50,23 C43,17 41,8 47,1 C49,9 56,12 50,23Z" fill="${L.plume}" ${ink}/>`;
+  if (L.helm==='cap') o += hairBase + `<path d="M42.5,32 L57.5,32 L55,19 L45,19Z" fill="${HAIR}" ${ink}/><path d="M37,24.5 L63,24.5" stroke="${A.trim}" stroke-width="1.5" stroke-linecap="round"/>`;
+  if (L.helm==='crown') o += hairBase + `<path d="M37.5,33 C38.5,19 61.5,19 62.5,33Z" fill="#3a2320" ${ink}/><path d="M37.5,33 L62.5,33" stroke="#c9a13b" stroke-width="2.4"/><path d="M45.5,20.5 L50,11 L54.5,20.5Z" fill="#c9a13b" ${ink}/>`;
+  if (L.helm==='wild') o += `<path d="M34,47 L29,34 L37,36 L35,24 L43,30 L47,19 L52,28.5 L58,20 L60,31 L68,26 L64.5,38 L71,42 L66,47 C62,37 38,37 34,47Z" fill="${HAIR}"/>`;
+  if (L.helm==='band') o += hairBase + `<path d="M35.2,40.5 Q50,35 64.8,40.5 L64.8,44.5 Q50,39 35.2,44.5Z" fill="#b3321f"/><path d="M64,41.5 C73,44 77,52 82,58 M64,43.5 C71,48 73,56 75,64" stroke="#b3321f" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
+  if (L.bells) o += `<circle cx="36" cy="60" r="2.2" fill="#c9a13b" ${ink}/><circle cx="64" cy="60" r="2.2" fill="#c9a13b" ${ink}/><circle cx="50" cy="97" r="3" fill="#c9a13b" ${ink}/>`;
+  return o;
+}
+
+function buildDefs(){
+  let d = `<radialGradient id="wash-wei" cx="50%" cy="42%" r="72%"><stop offset="0" stop-color="#efe6cc"/><stop offset=".62" stop-color="#cdd0c6"/><stop offset="1" stop-color="#93a3b3"/></radialGradient>
+  <radialGradient id="wash-wu" cx="50%" cy="42%" r="72%"><stop offset="0" stop-color="#f0e4c8"/><stop offset=".62" stop-color="#e2c3a8"/><stop offset="1" stop-color="#c38b73"/></radialGradient>
+  <pattern id="lam-wei" width="6" height="5" patternUnits="userSpaceOnUse"><rect width="6" height="5" fill="#34496b"/><path d="M0,5 Q3,1 6,5" fill="none" stroke="#1b2536" stroke-width=".7"/></pattern>
+  <pattern id="lam-wu" width="6" height="5" patternUnits="userSpaceOnUse"><rect width="6" height="5" fill="#7d2a1f"/><path d="M0,5 Q3,1 6,5" fill="none" stroke="#3f140e" stroke-width=".7"/></pattern>
+  <pattern id="lam-gold" width="6" height="5" patternUnits="userSpaceOnUse"><rect width="6" height="5" fill="#9c7a2c"/><path d="M0,5 Q3,1 6,5" fill="none" stroke="#5a4516" stroke-width=".7"/></pattern>
+  <clipPath id="tokclip"><circle r="12.8"/></clipPath>`;
+  for (const id of Object.keys(GEN)) d += `<symbol id="pt-${id}" viewBox="0 0 100 120">${portrait(id)}</symbol>`;
+  $('gdefs').innerHTML = `<defs>${d}</defs>`;
+}
+const ptSVG = id => `<svg viewBox="0 0 100 120" aria-hidden="true"><use href="#pt-${id}"/></svg>`;
+
+/* ---------- geography ---------- */
+const W = 1000, H = 620, RW = 20;
+const RIVER = [[-40,430],[150,414],[330,400],[500,386],[650,362],[800,346],[1040,332]];
+function riverY(x){ for (let i=0;i<RIVER.length-1;i++){ const [x0,y0]=RIVER[i],[x1,y1]=RIVER[i+1]; if (x>=x0 && x<=x1) return y0+(y1-y0)*(x-x0)/(x1-x0); } return RIVER[RIVER.length-1][1]; }
+const CITY = {x:320, y:250, w:130, h:95};
+const BRIDGE_X = 650;
+const MOUND = [620,205];
+const CAMPS = {sunquan:[585,250], lvmeng:[370,185], ganning:[480,205], lingtong:[492,282], jiangqin:[240,290], wujun:[250,200]};
+const LAKE = {cx:905, cy:585, rx:150, ry:70};
+
+function terrain(){
+  const R = rng(3);
+  let o = `<defs>
+    <pattern id="wave" width="20" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-6)"><path d="M0,5 Q5,1 10,5 T20,5" fill="none" stroke="#56686c" stroke-width=".8" opacity=".6"/></pattern>
+    <linearGradient id="mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d5a55"/><stop offset=".55" stop-color="#6f8d71" stop-opacity=".8"/><stop offset="1" stop-color="#b9a878" stop-opacity=".12"/></linearGradient>
+    <radialGradient id="stain"><stop offset="0" stop-color="#b89c62" stop-opacity=".32"/><stop offset="1" stop-color="#b89c62" stop-opacity="0"/></radialGradient>
+  </defs>`;
+  o += `<rect x="-20" y="-20" width="${W+40}" height="${H+40}" fill="#e0cfa6"/>`;
+  for (const [x,y,rx,ry] of [[200,120,260,140],[820,210,220,160],[560,520,300,120],[90,520,180,110]]) o += `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="url(#stain)"/>`;
+  // 屯田 fields
+  for (const [x,y,w,h] of [[130,318,84,38],[700,196,80,40],[780,110,70,40],[820,250,70,36],[120,420,70,34]]){
+    o += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#cfc089" opacity=".35" stroke="${INK}" stroke-width=".8"/>`;
+    let g = ''; for (let i=1;i<3;i++) g += `M${x+w*i/3},${y} v${h} `; g += `M${x},${y+h/2} h${w}`;
+    o += `<path d="${g}" stroke="${INK}" stroke-width=".6" opacity=".5"/>`;
+  }
+  // hills
+  const hills = [[110,200,1.3],[60,262,.9],[170,150,.8],[620,95,1],[705,70,.9],[860,90,1],[300,545,1],[430,565,.8],[170,525,.9],[560,470,.7]];
+  for (const [x,y,s] of hills){
+    const j = () => (R()-.5)*4*s;
+    const p = `M${f1(x-44*s)},${y} Q${f1(x-28*s+j())},${f1(y-30*s)} ${f1(x-14*s)},${f1(y-54*s)} Q${f1(x-2*s)},${f1(y-34*s+j())} ${f1(x+8*s)},${f1(y-42*s)} Q${f1(x+24*s)},${f1(y-22*s+j())} ${f1(x+44*s)},${y} Z`;
+    o += `<path d="${p}" fill="url(#mtn)" stroke="${INK}" stroke-width="1.3" stroke-linejoin="round"/>`;
+    o += `<path d="M${f1(x-14*s)},${f1(y-50*s)} q-4,${f1(14*s)} -12,${f1(26*s)} M${f1(x+8*s)},${f1(y-38*s)} q3,${f1(10*s)} 10,${f1(20*s)}" stroke="${INK}" stroke-width=".8" fill="none" opacity=".6"/>`;
+  }
+  // mound 高冢
+  o += `<path d="M${MOUND[0]-30},${MOUND[1]+14} Q${MOUND[0]-12},${MOUND[1]-14} ${MOUND[0]},${MOUND[1]-12} Q${MOUND[0]+14},${MOUND[1]-12} ${MOUND[0]+30},${MOUND[1]+14}Z" fill="#a89a6a" stroke="${INK}" stroke-width="1.2" opacity=".85"/>`;
+  // river
+  const bank = (sign, seed) => { const r = rng(seed), pts = []; for (let x=-40;x<=1040;x+=20) pts.push([x, riverY(x) + sign*(RW + (r()-.5)*5)]); return pts; };
+  const nb = bank(-1, 11), sb = bank(1, 23);
+  const rd = smooth(nb) + ' ' + smooth(sb.slice().reverse(), false) + ' Z';
+  o += `<path d="${rd}" fill="#cfcdb0"/><path d="${rd}" fill="url(#wave)"/>`;
+  o += `<path d="${smooth(nb)}" fill="none" stroke="${INK}" stroke-width="1.6"/><path d="${smooth(sb)}" fill="none" stroke="${INK}" stroke-width="1.6"/>`;
+  // lake
+  const lk = []; const lr = rng(31);
+  for (let i=0;i<24;i++){ const a = i/24*Math.PI*2, k = 1 + (lr()-.5)*.12; lk.push([LAKE.cx + Math.cos(a)*LAKE.rx*k, LAKE.cy + Math.sin(a)*LAKE.ry*k]); }
+  lk.push(lk[0]);
+  const ld = smooth(lk) + ' Z';
+  o += `<path d="${ld}" fill="#cfcdb0" stroke="${INK}" stroke-width="1.6"/><path d="${ld}" fill="url(#wave)"/>`;
+  // road to 濡須
+  o += `<path d="${smooth([[650,386],[690,430],[760,480],[800,512]])}" fill="none" stroke="#5a4630" stroke-width="1.8" stroke-dasharray="3 5" stroke-linecap="round"/>`;
+  // city
+  const {x:cx, y:cy, w:cw, h:ch} = CITY;
+  o += `<rect x="${cx}" y="${cy}" width="${cw}" height="${ch}" fill="#e7d9b4" stroke="${INK}" stroke-width="2.4"/>`;
+  let cren = '';
+  for (let x=cx+4;x<cx+cw-4;x+=9) cren += `M${x},${cy} v-4 h5 v4 `;
+  o += `<path d="${cren}" fill="none" stroke="${INK}" stroke-width="1.2"/>`;
+  for (const [gx,gy,v] of [[cx+cw/2,cy,0],[cx+cw/2,cy+ch,0],[cx,cy+ch/2,1],[cx+cw,cy+ch/2,1]]) o += v ? `<rect x="${gx-4}" y="${gy-7}" width="8" height="14" fill="#e0cfa6" stroke="${INK}" stroke-width="1.2"/>` : `<rect x="${gx-7}" y="${gy-4}" width="14" height="8" fill="#e0cfa6" stroke="${INK}" stroke-width="1.2"/>`;
+  for (const [bx,by,bw,bh] of [[340,264,22,12],[396,262,30,14],[338,318,18,12],[420,322,16,10],[372,300,20,12]]) o += `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="none" stroke="${INK}" stroke-width=".7" opacity=".5"/>`;
+  // labels
+  const L = `fill="${INK}" font-family="${BRUSH}" font-weight="700"`;
+  const vt = (x,y,s,sz,ex='') => [...s].map((c,i) => `<text x="${x}" y="${f1(y+i*sz*1.1)}" text-anchor="middle" font-size="${sz}" ${L} ${ex}>${c}</text>`).join('');
+  o += vt(302,276,'合肥',22) + vt(58,142,'大蜀山',15) + vt(616,410,'逍遙津',17) + vt(840,452,'往濡須',13,'opacity=".8"');
+  o += `<text x="${MOUND[0]+36}" y="${MOUND[1]-6}" font-size="13" ${L}>高冢</text>`;
+  o += `<text transform="translate(210,430) rotate(-4.5)" text-anchor="middle" font-size="16" ${L} opacity=".75" letter-spacing="10">施水</text>`;
+  o += `<text x="930" y="596" text-anchor="middle" font-size="18" ${L} opacity=".75" letter-spacing="8">巢湖</text>`;
+  o += `<text x="172" y="312" text-anchor="middle" font-size="12" ${L} opacity=".7">屯田</text>`;
+  // cartouche + seal
+  o += `<rect x="928" y="18" width="54" height="196" fill="#ead9ae" stroke="${INK}" stroke-width="1.6"/><rect x="933" y="23" width="44" height="186" fill="none" stroke="${INK}" stroke-width=".7"/>`;
+  o += [...'合肥逍遙津圖'].map((c,i) => `<text x="955" y="${50+i*27}" text-anchor="middle" font-size="23" fill="${INK}" font-family="${BRUSH}" font-weight="700">${c}</text>`).join('');
+  o += `<rect x="939" y="222" width="32" height="32" rx="3" fill="#b3321f"/><text x="955" y="244" text-anchor="middle" font-size="15" fill="#f3e3c3" font-family="${BRUSH}" font-weight="700">乙未</text>`;
+  o += `<g transform="translate(30,592)"><path d="M0,0 h80 M0,-5 v10 M40,-4 v8 M80,-5 v10" stroke="${INK}" stroke-width="1.5"/><text x="94" y="5" font-size="13" ${L}>二十里</text></g>`;
+  o += `<rect x="6" y="6" width="${W-12}" height="${H-12}" fill="none" stroke="${INK}" stroke-width="2.2"/><rect x="12" y="12" width="${W-24}" height="${H-24}" fill="none" stroke="${INK}" stroke-width=".7"/>`;
+  return o;
+}
+
+/* ---------- scenario ---------- */
+const SIZE = {I:'百人級', II:'千人級', III:'數千人', XX:'萬人級', XXX:'數萬人'};
+const TYPE = {inf:'步兵', cav:'步騎'};
+function sizeOf(n){ return n>=50000?'XXX' : n>=10000?'XX' : n>=5000?'III' : n>=1000?'II' : 'I'; }
+const BR = [650,362];
+const UNITS = [
+  {gen:'zhangliao', title:'八百敢死士', type:'cav',
+   kf:[[0,[420,302],800,90],[0.95,[420,302],800,96],[1.05,[456,298],800,98],[1.25,[497,276],790,99],[1.45,[560,254],770,99],[1.62,[578,246],760,99],[1.72,[556,256],740,90],[1.8,[516,305],700,88],[1.86,[548,262],690,90],[1.95,[500,300],680,94],[2.05,[420,302],670,97],[2.95,[420,302],670,97],[3.15,[458,300],670,98],[3.35,[555,300],660,98],[3.5,[566,298],640,97],[3.72,[600,318],625,96],[3.85,[622,330],620,96],[4,[622,330],620,96]],
+   st:[[0,'守合肥'],[0.85,'夜募敢死士，椎牛饗士'],[1,'平旦出擊'],[1.25,'大呼自名，衝壘直入'],[1.55,'至孫權麾下，叱權下戰'],[1.68,'被圍數重'],[1.78,'突圍而出'],[1.84,'復還突圍，救出餘眾'],[1.96,'還城修守備'],[2.05,'守城'],[3.1,'率諸軍追擊'],[3.45,'於逍遙津北交戰'],[3.8,'追至津北，橋斷而止']]},
+  {gen:'lidian', title:'合肥守軍', type:'inf',
+   kf:[[0,[352,322],1700,85],[0.95,[352,322],1700,90],[1.1,[440,320],1700,92],[1.5,[466,322],1650,92],[1.8,[470,322],1600,90],[2.05,[352,322],1580,92],[2.95,[352,322],1580,92],[3.2,[460,330],1575,93],[3.45,[505,322],1570,94],[3.8,[548,334],1560,94],[4,[548,334],1560,94]],
+   st:[[0,'守合肥'],[0.8,'以公義為重，願隨張遼出戰'],[1,'隨張遼出擊'],[2,'還城'],[3.15,'隨軍追擊']]},
+  {gen:'yuejin', title:'合肥守軍', type:'inf',
+   kf:[[0,[372,272],4500,85],[4,[372,272],4450,88]],
+   st:[[0,'奉教守城'],[1,'守城，接應出擊部隊'],[2.1,'堅守城池']]},
+  {gen:'sunquan', title:'孫權本陣', type:'inf',
+   kf:[[0,[688,428],12000,85],[0.12,BR,12000,85],[0.34,CAMPS.sunquan,12000,85],[1.42,CAMPS.sunquan,12000,82],[1.52,[MOUND[0],MOUND[1]-4],11800,55],[1.95,[MOUND[0],MOUND[1]-4],11700,50],[2.2,CAMPS.sunquan,11600,60],[2.9,CAMPS.sunquan,11200,58],[3.0,[605,295],1200,55],[3.3,[628,318],1150,52],[3.55,[645,336],1000,45],[3.62,[655,386],950,42],[3.8,[668,420],950,48],[4,[668,420],950,50]],
+   st:[[0,'率大軍北上'],[0.3,'立營於城東北'],[1.45,'大驚，走登高冢，以長戟自守'],[2.1,'圍城'],[2.95,'大軍先行，自率千餘人留津北（兵力減少為分兵）'],[3.35,'遭張遼追擊'],[3.56,'津橋已撤，躍馬過津'],[3.7,'與賀齊會合']]},
+  {gen:'lvmeng', title:'呂蒙部', type:'inf',
+   kf:[[0,[712,452],25000,80],[0.17,BR,25000,80],[0.42,CAMPS.lvmeng,25000,80],[1.55,CAMPS.lvmeng,25000,80],[1.72,[498,238],24800,78],[2.2,CAMPS.lvmeng,24700,76],[2.9,CAMPS.lvmeng,24300,70],[3.05,[560,298],1500,72],[3.45,[596,318],1300,70],[3.75,[650,372],1200,66],[3.95,[700,478],1200,66],[4,[700,478],1200,66]],
+   st:[[0,'率軍北上'],[0.4,'屯城北'],[1.62,'回援，合圍張遼'],[2.1,'圍城'],[2.95,'主力先撤，率親兵殿後'],[3.4,'與凌統以死扞衛孫權'],[3.72,'渡津南撤']]},
+  {gen:'ganning', title:'甘寧部', type:'inf',
+   kf:[[0,[738,472],15000,85],[0.22,BR,15000,85],[0.44,CAMPS.ganning,15000,85],[1.55,CAMPS.ganning,15000,85],[1.72,[556,215],14800,82],[2.2,CAMPS.ganning,14700,80],[2.9,CAMPS.ganning,14500,75],[3.05,[575,282],800,78],[3.45,[606,300],700,80],[3.75,[640,372],650,75],[3.95,[620,462],650,75],[4,[620,462],650,75]],
+   st:[[0,'率軍北上'],[0.42,'屯城東北'],[1.62,'合圍張遼'],[2.1,'圍城'],[2.95,'主力先撤，留津北殿後'],[3.4,'力戰護主'],[3.72,'渡津南撤']]},
+  {gen:'lingtong', title:'凌統部', type:'inf',
+   kf:[[0,[764,490],8000,85],[0.27,BR,8000,85],[0.47,CAMPS.lingtong,8000,85],[1.15,CAMPS.lingtong,8000,85],[1.3,[510,306],7800,62],[1.55,[510,306],7800,66],[1.72,[548,288],7700,72],[2.2,CAMPS.lingtong,7600,75],[2.9,CAMPS.lingtong,7400,75],[3.05,[572,318],300,85],[3.45,[612,326],300,95],[3.72,[606,324],40,70],[3.85,[630,382],25,60],[4,[610,408],20,60]],
+   st:[[0,'率軍北上'],[0.45,'屯城東'],[1.2,'遭張遼衝擊'],[1.62,'合圍張遼'],[2.1,'圍城'],[2.95,'主力先撤，率親近三百人殿後'],[3.4,'率三百人陷圍，扶扞孫權'],[3.68,'左右盡死，身亦被創'],[3.8,'被甲潛行，渡水而還']]},
+  {gen:'jiangqin', title:'蔣欽部', type:'inf',
+   kf:[[0,[700,490],20000,80],[0.32,BR,20000,80],[0.44,[400,358],20000,80],[0.56,CAMPS.jiangqin,20000,80],[2.9,CAMPS.jiangqin,19500,72],[3.02,[400,358],800,72],[3.25,[545,340],800,74],[3.55,[585,342],700,80],[3.85,[650,382],650,72],[4,[770,500],650,72]],
+   st:[[0,'率軍北上'],[0.55,'屯城西'],[2.95,'主力先撤，率親兵殿後'],[3.4,'津北力戰'],[3.78,'渡津南撤']]},
+  {gen:'wujun', title:'吳軍諸部', type:'inf',
+   kf:[[0,[740,515],20000,78],[0.37,BR,20000,78],[0.5,[470,235],20000,78],[0.62,CAMPS.wujun,20000,78],[2.9,CAMPS.wujun,19000,65],[3.0,[470,235],95400,66],[3.15,[620,340],95400,66],[3.3,[652,372],95400,66],[3.5,[740,470],95300,66],[3.8,[850,500],95200,66],[4,[850,500],95200,66]],
+   st:[[0,'隨軍北上'],[0.6,'屯城西北'],[2.95,'大軍先撤（各部兵力併入）'],[3.3,'渡逍遙津'],[3.6,'撤往濡須']]},
+  {gen:'heqi', title:'津南接應', type:'inf',
+   kf:[[3.3,[800,470],3000,85],[3.62,[752,432],3000,88],[4,[752,432],3000,88]],
+   st:[[3.3,'率三千人於津南接應'],[3.65,'迎接孫權']]},
+];
+UNITS.forEach(u => { u.id = u.gen; u.init = u.kf[0][2]; u.size = sizeOf(u.init); });
+const INIT = {wei:7000, wu:100000};
+
+const CHAPTERS = [[0,'一','賊至乃發','孫權十萬大軍壓境，張遼打開曹操留下的教書。'],[0.9,'二','八百破陣','平旦出擊，八百人直衝孫權大營。'],[2.05,'三','圍城十日','吳軍圍城十餘日不下，軍中疾疫。'],[2.9,'四','逍遙津','吳軍撤退，張遼追至逍遙津北，孫權險些被擒。']];
+const EVENTS = [
+  {s:0.05, t:'孫權圍合肥', h:'「權率十萬眾圍合肥。」趁曹操西征張魯，孫權親率大軍北上。', hs:'《三國志・張遼傳》', n:'孫權起兵十萬，殺奔合肥而來。', ns:'《三國演義》第六十七回'},
+  {s:0.5, t:'賊至乃發', cut:'zhangliao', h:'張遼等人打開曹操留下的教書：「若孫權至者，張、李將軍出戰；樂將軍守，護軍勿得與戰。」', hs:'《三國志・張遼傳》', n:'張遼拆開曹操留下的木匣，依教書行事。', ns:'《三國演義》第六十七回'},
+  {s:0.8, t:'李典請戰', cut:'lidian', h:'李典慨然曰：「此國家大事，顧君計何如耳，吾可以私憾而忘公義乎！」', hs:'《三國志・李典傳》'},
+  {s:0.9, t:'夜募八百', h:'「遼夜募敢從之士，得八百人，椎牛饗將士，明日大戰。」', hs:'《三國志・張遼傳》'},
+  {s:1.3, t:'大呼自名', cut:'zhangliao', h:'「平旦，遼被甲持戟，先登陷陣，殺數十人，斬二將，大呼自名，衝壘入，至權麾下。」', hs:'《三國志・張遼傳》'},
+  {s:1.5, t:'權走高冢', cut:'sunquan', h:'「權大驚，眾不知所為，走登高冢，以長戟自守。遼叱權下戰，權不敢動。」', hs:'《三國志・張遼傳》'},
+  {s:1.82, t:'將軍棄我乎', cut:'zhangliao', h:'「遼將麾下數十人得出，餘眾號呼曰：『將軍棄我乎！』遼復還突圍，拔出餘眾。」', hs:'《三國志・張遼傳》'},
+  {s:2.0, t:'吳人奪氣', h:'「自旦戰至日中，吳人奪氣，還修守備，眾心乃安。」', hs:'《三國志・張遼傳》'},
+  {s:2.6, t:'圍城十餘日', h:'「權守合肥十餘日，城不可拔，乃引退。」', hs:'《三國志・張遼傳》'},
+  {s:2.95, t:'孫權撤軍', h:'「會疫疾，軍旅皆已引出，唯車下虎士千餘人，并呂蒙、蔣欽、凌統及寧，從權逍遙津北。」', hs:'《三國志・甘寧傳》'},
+  {s:3.35, t:'張遼追擊', cut:'zhangliao', h:'張遼望見孫權身邊兵少，「即將步騎奄至」。', hs:'《三國志・甘寧傳》', n:'張遼引兵殺至逍遙津，孫權大驚。', ns:'《三國演義》第六十七回'},
+  {s:3.5, t:'凌統陷圍', cut:'lingtong', h:'「統率親近三百人陷圍，扶扞權出。」凌統回身再戰，左右盡死，自己也受了傷。', hs:'《三國志・凌統傳》', n:'凌統引三百餘騎死戰，手下盡皆戰死。', ns:'《三國演義》第六十七回'},
+  {s:3.58, t:'躍馬過津', cut:'sunquan', h:'津橋南段已撤，丈餘無板。親近監谷利在馬後，要孫權持鞍緩控，自己在後加鞭，孫權遂得躍過。', hs:'《江表傳》（裴注引）', n:'孫權聽從谷利之言，縱馬加鞭，一躍飛過小師橋。', ns:'《三國演義》第六十七回'},
+  {s:3.62, t:'陳武戰死', lore:'history', h:'陳武隨孫權征合肥，奮命戰死。', hs:'《三國志・陳武傳》'},
+  {s:3.72, t:'賀齊接應', h:'賀齊率三千兵在津南迎接孫權。', hs:'《江表傳》（裴注引）'},
+  {s:3.95, t:'威震逍遙津', cut:'zhangliao', h:'次年曹操至合肥，巡視張遼作戰之處，歎息良久。', hs:'《三國志・張遼傳》', n:'「江南人人害怕，聞張遼大名，小兒也不敢夜啼。」', ns:'《三國演義》第六十七回'},
+];
+const CLASH = [[1.2,1.32,'zhangliao'],[1.45,1.97,'zhangliao'],[3.42,3.72,'lingtong'],[3.45,3.62,'jiangqin']];
+const HK = [[0,12],[0.45,17],[0.8,21],[0.9,23],[1.0,29],[1.5,32],[2.0,36],[2.05,37],[2.6,276],[2.9,294],[3.35,297],[3.6,298],[4,300]];
+const CAMF = [[0,660,400,760],[0.5,480,300,820],[0.95,420,290,520],[1.3,505,265,380],[1.95,505,272,420],[2.1,450,285,780],[2.9,470,300,760],[3.25,580,335,520],[3.5,622,345,360],[3.8,652,385,400],[4,660,400,600]];
+const SC = '子丑寅卯辰巳午未申酉戌亥';
+const CN = ['','一','二','三','四','五','六','七','八','九','十','十一','十二','十三'];
+
+function interp(tab, s, cols){
+  if (s <= tab[0][0]) return tab[0].slice(1);
+  for (let i=0;i<tab.length-1;i++){ if (s <= tab[i+1][0]){ const t = (s-tab[i][0])/(tab[i+1][0]-tab[i][0]); return tab[i].slice(1).map((v,k) => lerp(v, tab[i+1][k+1], t)); } }
+  return tab[tab.length-1].slice(1);
+}
+const hourAt = s => interp(HK, s)[0];
+function clockAt(s){
+  const h = hourAt(s), day = Math.floor(h/24)+1, hh = h%24;
+  const idx = Math.floor(((hh+1)%24)/2), hr = Math.floor(hh), mn = Math.floor((hh-hr)*4)*15;
+  return {day, dayCN: CN[day] || String(day), sc: SC[idx]+'時', hm: String(hr).padStart(2,'0')+':'+String(mn).padStart(2,'0')};
+}
+function nightAt(s){
+  if (s > 2.08 && s < 2.85) return .1;
+  const hh = hourAt(s)%24;
+  return hh>=18&&hh<20 ? (hh-18)/2 : (hh>=20||hh<4) ? 1 : hh<6 ? 1-(hh-4)/2 : 0;
+}
+function chapterAt(s){ let c = CHAPTERS[0]; for (const ch of CHAPTERS) if (s >= ch[0]) c = ch; return c; }
+function visible(u, s){ return s >= u.kf[0][0]; }
+function stateAt(u, s){
+  const k = u.kf;
+  if (s <= k[0][0]) return {x:k[0][1][0], y:k[0][1][1], str:k[0][2], mor:k[0][3]};
+  for (let i=0;i<k.length-1;i++){
+    if (s <= k[i+1][0]){
+      const t = (s-k[i][0])/(k[i+1][0]-k[i][0]), e = t*t*(3-2*t);
+      return {x:lerp(k[i][1][0],k[i+1][1][0],e), y:lerp(k[i][1][1],k[i+1][1][1],e), str:lerp(k[i][2],k[i+1][2],t), mor:lerp(k[i][3],k[i+1][3],t)};
+    }
+  }
+  const l = k[k.length-1]; return {x:l[1][0], y:l[1][1], str:l[2], mor:l[3]};
+}
+function statusAt(u, s){ let t = u.st[0][1]; for (const [a,b] of u.st) if (s>=a) t = b; return t; }
+const evText = (e, lore) => lore==='novel' && e.n ? {text:e.n, src:e.ns, tag:'演義'} : {text:e.h, src:e.hs, tag:'正史'};
+const evOn = (e, lore) => !e.lore || e.lore===lore;
+
+/* ---------- dynamic map layer ---------- */
+function glyph(type, c){
+  const sk = `stroke="${c}" stroke-width="2.4" fill="none" stroke-linecap="round"`;
+  return type==='cav' ? `<path d="M-22,15 L22,-15" ${sk}/>` : `<path d="M-22,-15 L22,15 M-22,15 L22,-15" ${sk}/>`;
+}
+function token(u, st, sel, ts){
+  const g = GEN[u.gen], col = FC[g.f], routed = st.mor < 15;
+  let o = '';
+  if (sel){ const rot = reduce ? 0 : (ts/40)%360; o += `<circle r="47" fill="none" stroke="#b3321f" stroke-width="2.6" stroke-dasharray="6 5" transform="rotate(${f1(rot)})"/>`; }
+  o += `<path d="M-30,-24 V-41 H-10 L-14,-35.5 L-10,-30 H-30" fill="${col}"/><text x="-21" y="-31.6" text-anchor="middle" font-size="10" font-weight="700" fill="#fbf3dd" font-family="${BRUSH}">${g.sur}</text>`;
+  o += `<rect x="-34" y="-24" width="68" height="48" rx="3" fill="#f1e6c9" stroke="${col}" stroke-width="1.8" ${routed?'stroke-dasharray="4 3"':''}/><rect x="-34" y="-24" width="4" height="48" fill="${col}"/>`;
+  o += `<g transform="translate(-14,-4)"><circle r="12.8" fill="#e8dcc0"/><g clip-path="url(#tokclip)"><use href="#pt-${u.gen}" x="-19" y="-19" width="38" height="45.6"/></g><circle r="12.8" fill="none" stroke="${col}" stroke-width="1.8"/></g>`;
+  o += `<g transform="translate(15,-12) scale(.42)"><rect x="-22" y="-15" width="44" height="30" fill="${mix(col,'#f0e4c6',.8)}" stroke="${col}" stroke-width="2.5"/>${glyph(u.type, mix(col,'#000000',.2))}</g>`;
+  o += `<text x="15" y="5" text-anchor="middle" font-size="10.5" font-weight="700" fill="${INK}" font-family="${BRUSH}">${g.short || g.name}</text>`;
+  o += `<text x="15" y="13.5" text-anchor="middle" font-size="8" fill="${INK}" font-family="IBM Plex Mono,monospace">${fmtStr(st.str)}</text>`;
+  const track = '#d9cba6';
+  o += `<rect x="-28" y="16" width="58" height="3" fill="${track}"/><rect x="-28" y="16" width="${f1(58*clamp01(st.str/u.init))}" height="3" fill="${col}"/>`;
+  o += `<rect x="-28" y="20.5" width="58" height="2.2" fill="${track}"/><rect x="-28" y="20.5" width="${f1(58*st.mor/100)}" height="2.2" fill="#b08a2e"/>`;
+  o += `<rect x="-36" y="-44" width="72" height="70" fill="transparent"/>`;
+  return o;
+}
+function dynLayer(s, ts){
+  let o = '';
+  // camps
+  if (s >= 0.3 && s < 3.2){
+    const fade = s > 2.95 ? clamp01((3.2-s)/.25) : clamp01((s-.3)/.25);
+    for (const [x,y] of Object.values(CAMPS)) o += `<g opacity="${f1(fade*.9)}"><circle cx="${x}" cy="${y+6}" r="30" fill="${FC.wu}" opacity=".08"/><circle cx="${x}" cy="${y+6}" r="30" fill="none" stroke="${INK}" stroke-width="2.2" stroke-dasharray="2 3"/></g>`;
+  }
+  // bridge 小師橋
+  const by0 = riverY(BRIDGE_X)-RW-4, by1 = riverY(BRIDGE_X)+RW+4;
+  const broken = s >= 3.45;
+  const seg = (a,b) => { let p = `<rect x="${BRIDGE_X-8}" y="${f1(a)}" width="16" height="${f1(b-a)}" fill="#b89b6a" stroke="${INK}" stroke-width="1.2"/>`; for (let y=a+4;y<b;y+=4) p += `<path d="M${BRIDGE_X-8},${f1(y)} h16" stroke="${INK}" stroke-width=".5"/>`; return p; };
+  if (!broken) o += seg(by0, by1);
+  else { const g0 = by0 + (by1-by0)*.55, g1 = by0 + (by1-by0)*.85; o += seg(by0, g0) + seg(g1, by1) + `<path d="M${BRIDGE_X+14},${f1(g0+4)} l8,3 M${BRIDGE_X-20},${f1(g0+9)} l7,-2" stroke="#8a7550" stroke-width="2.4" stroke-linecap="round"/>`; }
+  // trails: recent movement only
+  if (state.trail){
+    for (const u of UNITS){
+      if (!visible(u,s)) continue;
+      const pts = [];
+      for (let t = Math.max(u.kf[0][0], s-.45); t <= s+1e-6; t += .03){ const st = stateAt(u,t); pts.push([st.x, st.y]); }
+      if (pts.length < 3) continue;
+      let len = 0; for (let i=1;i<pts.length;i++) len += Math.hypot(pts[i][0]-pts[i-1][0], pts[i][1]-pts[i-1][1]);
+      if (len < 12) continue;
+      o += `<path d="${smooth(pts)}" fill="none" stroke="${FC[GEN[u.gen].f]}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".4"/>`;
+    }
+  }
+  // night
+  const n = nightAt(s);
+  if (n > 0) o += `<rect x="-500" y="-500" width="2000" height="1700" fill="#1b1d33" opacity="${(n*.36).toFixed(3)}" pointer-events="none"/>`;
+  // units
+  const vis = UNITS.filter(u => visible(u,s)).map(u => [u, stateAt(u,s)]).sort((a,b) => a[1].y-b[1].y);
+  for (const [u,st] of vis) o += `<g class="unit" data-id="${u.id}" transform="translate(${f1(st.x)},${f1(st.y)}) scale(.8)" opacity="${st.mor<15?.6:1}">${token(u,st,state.sel===u.id,ts)}</g>`;
+  // clash marks
+  for (const [a,b,id] of CLASH){
+    if (s < a || s > b) continue;
+    const u = UNITS.find(x => x.id===id), st = stateAt(u,s);
+    const k = reduce ? 1 : 1 + .12*Math.sin(ts/90);
+    o += `<g transform="translate(${f1(st.x+30)},${f1(st.y-40)}) scale(${k.toFixed(2)})" pointer-events="none"><circle r="11" fill="#f1e6c9" stroke="#b3321f" stroke-width="1.4"/><path d="M-6,-6 L6,6 M6,-6 L-6,6 M-6,-2.5 L-2.5,-6 M6,-2.5 L2.5,-6" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/></g>`;
+  }
+  return o;
+}
+
+/* ---------- state ---------- */
+const store = {
+  get(k,d){ try { const v = localStorage.getItem('xyj.'+k); return v==null ? d : v; } catch(e){ return d; } },
+  set(k,v){ try { localStorage.setItem('xyj.'+k, v); } catch(e){} }
+};
+const state = {
+  screen:'replay', dev: store.get('dev', innerWidth>=1100 ? 'desktop' : innerWidth>=700 ? 'tablet' : 'phone'),
+  lore: store.get('lore','novel'), s:1.55, playing:false, speed:1, sel:'zhangliao',
+  cut: store.get('cut','1')==='1', trail: store.get('trail','1')==='1', follow:true, tab:'unit',
+  cam:{cx:505, cy:265, w:420}, mw:800, mh:500, hold:0, cutEv:null
+};
+if (!['desktop','tablet','phone'].includes(state.dev)) state.dev = 'desktop';
+if (!['history','novel'].includes(state.lore)) state.lore = 'novel';
+let dirty = true, unitDirty = true, logKey = '', lastR = 0;
+
+/* ---------- camera ---------- */
+function camTarget(s){ const [cx,cy,w] = interp(CAMF, s); return {cx, cy, w}; }
+function clampCam(c){
+  const a = state.mh / Math.max(1, state.mw);
+  let w = clamp(c.w, 220, 1000); if (w*a > H) w = H/a;
+  const h = w*a;
+  return {cx: clamp(c.cx, w/2, W-w/2), cy: clamp(c.cy, Math.min(h/2, H/2), Math.max(H-h/2, H/2)), w};
+}
+function applyCam(){
+  const c = state.cam = clampCam(state.cam), h = c.w * state.mh / Math.max(1,state.mw);
+  $('map').setAttribute('viewBox', `${f1(c.cx-c.w/2)} ${f1(c.cy-h/2)} ${f1(c.w)} ${f1(h)}`);
+}
+
+/* ---------- screens ---------- */
+const TITLES = {menu:'三國戰役誌', brief:'合肥・逍遙津', replay:'逍遙津・歷史重播'};
+function go(screen){
+  state.screen = screen;
+  document.querySelectorAll('[data-screen]').forEach(el => el.hidden = el.dataset.screen !== screen);
+  $('app-title').textContent = TITLES[screen];
+  $('btn-back').classList.toggle('ghost', screen==='menu');
+  syncSeg('seg-screen', screen);
+  if (screen !== 'replay'){ state.playing = false; syncPlay(); }
+  dirty = true; unitDirty = true;
+}
+function back(){ if (state.screen==='replay') go('brief'); else if (state.screen==='brief') go('menu'); }
+
+function syncSeg(id, v){ const el = typeof id==='string' ? $(id) : id; if (el) el.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v===String(v)))); }
+function syncLore(){ document.querySelectorAll('[data-lore-seg]').forEach(el => syncSeg(el, state.lore)); }
+function syncPlay(){
+  const p = $('play');
+  p.innerHTML = state.playing ? '<svg viewBox="0 0 20 20"><rect x="4" y="3" width="4" height="14"/><rect x="12" y="3" width="4" height="14"/></svg>' : '<svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z"/></svg>';
+  p.setAttribute('aria-label', state.playing ? '暫停' : '播放');
+}
+
+function renderMenu(){
+  const B = [[190,'虎牢關','三英戰呂布（演義）','製作中'],[200,'官渡之戰','烏巢一把火，以少勝多','製作中'],[208,'赤壁之戰','東南風起，火燒連環船','製作中'],[211,'潼關之戰','割鬚棄袍，離間馬韓','規劃中'],[215,'合肥・逍遙津','張遼八百破十萬','可遊玩'],[219,'襄樊之戰','水淹七軍，白衣渡江','規劃中'],[222,'夷陵之戰','火燒連營七百里','規劃中'],[228,'街亭之戰','馬謖失街亭','規劃中']];
+  $('annals').innerHTML = B.map(([y,n,h,st]) => { const open = st==='可遊玩';
+    return `<li><div class="bat${open?' open':''}"><span class="yr">${y} 年</span><h4>${n}</h4><p>${h}</p><span class="st">${st}</span>${open?'<button type="button" class="btn primary" data-go="brief">進入</button>':''}</div></li>`; }).join('');
+}
+function renderBrief(){
+  const dots = (n,c) => Array.from({length:n}, () => `<i style="background:${c}"></i>`).join('');
+  $('odds').innerHTML = `<div class="odds-row"><div class="lab">曹魏<small>7,000</small></div><div class="dots">${dots(7,FC.wei)}</div></div>
+    <div class="odds-row"><div class="lab">孫吳<small>100,000</small></div><div class="dots">${dots(100,FC.wu)}</div></div>
+    <p class="foot">約 1 : 14。守軍人數出自《張遼傳》「七千餘人」，吳軍為「十萬眾」。</p>`;
+  $('roster').innerHTML = ROSTER.map(id => { const g = GEN[id];
+    return `<button type="button" class="gcard" data-gen="${id}" style="--fc:${FC[g.f]}">${ptSVG(id)}<b>${g.name}</b><small>${FNAME[g.f]}・${g.zi}</small></button>`; }).join('');
+  $('chapters').innerHTML = CHAPTERS.map(([s,no,t,d]) => `<li><span class="no">${no}</span><div><b>${t}</b><span>${d}</span></div><button type="button" class="btn" data-start="${s}">從此章</button></li>`).join('');
+}
+function renderStatic(){
+  $('bands').innerHTML = CHAPTERS.map(([s,no,t], i) => { const e = i<CHAPTERS.length-1 ? CHAPTERS[i+1][0] : 4;
+    return `<span class="band" style="left:${s/4*100}%;width:${(e-s)/4*100}%"><span class="full">${no}・${t}</span><span class="short">${no}</span></span>`; }).join('');
+  $('ticks').innerHTML = EVENTS.map((e,i) => `<button type="button" class="tick${e.cut?' cut':''}" data-i="${i}" style="left:${(e.s/4*100).toFixed(2)}%" title="${e.t}" aria-label="跳到：${e.t}"></button>`).join('');
+}
+
+function unitPane(){
+  const u = UNITS.find(x => x.id===state.sel);
+  if (!u || !visible(u,state.s)){ $('unit-pane').innerHTML = `<p style="margin:0;color:var(--ink-2);font-size:13px">點地圖上的兵團，查看兵力、士氣與狀態。</p>`; return; }
+  const g = GEN[u.gen];
+  $('unit-pane').innerHTML = `<div class="uhead">${g.roster===false ? `<div class="uport" style="cursor:default">${ptSVG(u.gen)}</div>` : `<button type="button" class="uport" data-gen="${u.gen}" aria-label="查看${g.name}列傳">${ptSVG(u.gen)}</button>`}
+      <div><div class="ufac" style="color:${FC[g.f]}">${FNAME[g.f]}・${u.title}</div><h4>${g.name}${g.zi?`<small>${g.zi}</small>`:''}</h4><p>${TYPE[u.type]}・規模 ${u.size}（${SIZE[u.size]}）</p></div></div>
+    <dl class="ustats">
+      <dt>兵力</dt><dd><span class="bar"><i id="u-str" style="background:${FC[g.f]}"></i></span></dd><dd class="v" id="u-strv"></dd>
+      <dt>士氣</dt><dd><span class="bar"><i id="u-mor" style="background:var(--gold)"></i></span></dd><dd class="v" id="u-morv"></dd>
+      <dt>狀態</dt><dd class="status" id="u-st"></dd>
+    </dl>${g.roster===false ? '' : `<button type="button" class="link" data-gen="${u.gen}">查看列傳 →</button>`}`;
+}
+function updateUnit(){
+  const u = UNITS.find(x => x.id===state.sel); if (!u || !$('u-str')) return;
+  const st = stateAt(u, state.s);
+  $('u-str').style.width = (clamp01(st.str/u.init)*100).toFixed(1)+'%';
+  $('u-strv').textContent = `${fmtStr(st.str)} / ${fmtStr(u.init)}`;
+  $('u-mor').style.width = st.mor.toFixed(1)+'%';
+  $('u-morv').textContent = Math.round(st.mor);
+  $('u-st').textContent = statusAt(u, state.s) + (st.mor<15 ? '（潰散）' : '');
+}
+function updateForces(){
+  const tot = {wei:0, wu:0};
+  for (const u of UNITS) if (visible(u,state.s)) tot[GEN[u.gen].f] += stateAt(u,state.s).str;
+  const max = INIT.wu + 3000;
+  $('forces').innerHTML = ['wei','wu'].map(f => `<div class="frow"><b style="color:${FC[f]}">${FNAME[f]}</b><span class="bar"><i style="width:${(tot[f]/max*100).toFixed(1)}%;background:${FC[f]}"></i></span><span class="v">${fmtStr(tot[f])}</span></div>`).join('') +
+    `<p class="ratio">開戰時 7,000 對 100,000，約 1 : 14。第四章吳軍主力先撤，孫權身邊只剩千餘人。</p>`;
+}
+function updateLog(){
+  if (logKey !== state.lore){
+    logKey = state.lore;
+    $('log').innerHTML = EVENTS.map((e,i) => { if (!evOn(e,state.lore)) return ''; const c = clockAt(e.s), x = evText(e, state.lore);
+      return `<li data-i="${i}"><button type="button" data-i="${i}"><span class="ev-t">${e.t}<span>第${c.dayCN}日 ${c.sc}</span></span><span class="ev-x">${x.text}</span><span class="ev-s">${x.tag}・${x.src}</span></button></li>`; }).join('');
+  }
+  let cur = -1; EVENTS.forEach((e,i) => { if (evOn(e,state.lore) && state.s >= e.s-1e-6) cur = i; });
+  document.querySelectorAll('#log li').forEach(li => { const i = +li.dataset.i; li.classList.toggle('future', i>cur); li.classList.toggle('cur', i===cur); });
+  document.querySelectorAll('#ticks .tick').forEach(b => { const i = +b.dataset.i; b.classList.toggle('on', i<=cur); b.hidden = !evOn(EVENTS[i], state.lore); });
+}
+function updateHud(){
+  const c = clockAt(state.s), ch = chapterAt(state.s);
+  const t = `建安二十年八月・第${c.dayCN}日 ${c.sc}`;
+  $('hud-chap').textContent = `${ch[1]}・${ch[2]}`;
+  $('hud-time').textContent = t;
+  $('tb-chap').textContent = `第${ch[1]}章　${ch[2]}`;
+  $('tb-clock').textContent = `${t}（${c.hm}）`;
+}
+function showCut(e){
+  const x = evText(e, state.lore), ch = chapterAt(e.s);
+  $('cutin').innerHTML = `${ptSVG(e.cut)}<div><p class="ci-eyebrow">第${ch[1]}章・${ch[2]}</p><h3 class="ci-title">${e.t}</h3><p class="ci-q">${x.text}</p><p class="ci-src">${x.tag}・${x.src}　（點一下繼續）</p></div>`;
+  $('cutin').classList.remove('hide');
+}
+function hideCut(){ $('cutin').classList.add('hide'); state.hold = 0; }
+
+/* ---------- general modal ---------- */
+function openBio(id){
+  const g = GEN[id]; if (!g || g.roster===false) return;
+  const labels = ['統率','武力','智力'];
+  const u = UNITS.find(x => x.gen===id);
+  const inBattle = state.screen==='replay' && u && visible(u,state.s);
+  const st = inBattle ? stateAt(u,state.s) : null;
+  $('modal').innerHTML = `<div class="dialog" role="dialog" aria-modal="true" aria-label="${g.name}列傳">
+    <button type="button" class="ibtn dclose" data-close aria-label="關閉"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5 5 15"/></svg></button>
+    <div class="dport">${ptSVG(id)}<div class="artnote"><b>插畫設定（暫代圖）</b>${g.art}</div></div>
+    <div class="dbody">
+      <div><span class="eyebrow" style="color:${FC[g.f]}">${FNAME[g.f]}・${g.role}</span><h3>${g.name}<small>字${g.zi}</small></h3><p class="dmeta">${g.from}人</p></div>
+      <div class="dstats">${g.stats.map((v,i) => `<span>${labels[i]}</span><span class="bar"><i style="width:${v}%;background:${FC[g.f]}"></i></span><span class="v">${v}</span>`).join('')}</div>
+      <p class="dstats-note">能力值為遊戲數值（暫定）。</p>
+      <p class="dbio">${g.bio[state.lore]}</p>
+      ${state.lore==='novel' ? `<p class="dbio" style="color:var(--ink-2);font-size:13px">正史：${g.bio.history}</p>` : ''}
+      <blockquote class="anec">${g.anec.text}<cite>${g.anec.src}</cite></blockquote>
+      ${st ? `<p class="dmeta">本戰目前：${statusAt(u,state.s)}・兵力 ${fmtStr(st.str)}・士氣 ${Math.round(st.mor)}</p>` : ''}
+    </div></div>`;
+  $('modal').hidden = false;
+  const c = $('modal').querySelector('[data-close]'); if (c) c.focus();
+  if (state.playing){ state.playing = false; syncPlay(); }
+}
+function closeBio(){ $('modal').hidden = true; $('modal').innerHTML = ''; }
+
+/* ---------- main loop ---------- */
+function rateAt(s){ return s > 2.1 && s < 2.85 ? 3 : 1; }
+function loop(ts){
+  const dt = Math.min(.1, (ts - (loop.prev || ts))/1000); loop.prev = ts;
+  if (state.screen === 'replay'){
+    if (state.playing){
+      if (state.hold){ if (ts >= state.hold) hideCut(); }
+      else {
+        const prev = state.s;
+        state.s = Math.min(4, state.s + dt*state.speed*.06*rateAt(state.s));
+        if (state.cut){
+          const e = EVENTS.find(e => e.cut && evOn(e,state.lore) && e.s > prev && e.s <= state.s);
+          if (e){ state.s = e.s; state.hold = ts + 3400; showCut(e); }
+        }
+        if (state.s >= 4){ state.playing = false; syncPlay(); }
+        $('tl').value = state.s; dirty = true;
+      }
+    }
+    if (state.follow){
+      const t = camTarget(state.s), k = 1 - Math.exp(-dt*3);
+      const c = state.cam, moved = Math.abs(t.cx-c.cx) + Math.abs(t.cy-c.cy) + Math.abs(t.w-c.w) > .5;
+      if (moved){ state.cam = {cx:lerp(c.cx,t.cx,k), cy:lerp(c.cy,t.cy,k), w:lerp(c.w,t.w,k)}; applyCam(); }
+    }
+    const anim = !reduce && (state.sel || CLASH.some(([a,b]) => state.s>=a && state.s<=b));
+    if (dirty || (anim && ts - lastR > 60)){
+      $('dyn').innerHTML = dynLayer(state.s, ts); lastR = ts;
+      if (dirty){
+        if (unitDirty){ unitPane(); unitDirty = false; }
+        updateUnit(); updateForces(); updateLog(); updateHud();
+      }
+      dirty = false;
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ---------- events ---------- */
+function setDev(v){ state.dev = v; store.set('dev', v); $('device').dataset.dev = v; syncSeg('seg-dev', v); }
+function setLore(v){ state.lore = v; store.set('lore', v); syncLore(); dirty = true; unitDirty = true; }
+function jump(s){ state.s = clamp(s,0,4); $('tl').value = state.s; state.playing = false; syncPlay(); hideCut(); state.follow = true; $('cam-follow').setAttribute('aria-pressed','true'); dirty = true; unitDirty = true; }
+function select(id){ state.sel = id; unitDirty = true; dirty = true; if (state.tab!=='unit') setTab('unit'); }
+function setTab(t){ state.tab = t; document.querySelectorAll('.tabs [data-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab===t))); document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.dataset.pane===t)); }
+
+$('seg-dev').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setDev(b.dataset.v); });
+$('seg-screen').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.v==='bio'){ if (state.screen==='menu') go('brief'); openBio(state.sel && GEN[state.sel].roster!==false ? state.sel : 'zhangliao'); syncSeg('seg-screen','bio'); } else go(b.dataset.v); });
+$('btn-back').addEventListener('click', back);
+$('btn-set').addEventListener('click', e => { e.stopPropagation(); const p = $('pop'); p.hidden = !p.hidden; $('btn-set').setAttribute('aria-expanded', String(!p.hidden)); });
+$('app').addEventListener('click', e => {
+  const t = e.target;
+  if (!$('pop').hidden && !t.closest('#pop') && !t.closest('#btn-set')){ $('pop').hidden = true; $('btn-set').setAttribute('aria-expanded','false'); }
+  const ls = t.closest('[data-lore-seg] button'); if (ls) setLore(ls.dataset.v);
+  const g = t.closest('[data-go]'); if (g) go(g.dataset.go);
+  const st = t.closest('[data-start]'); if (st){ go('replay'); jump(+st.dataset.start); state.playing = true; syncPlay(); }
+  const gen = t.closest('[data-gen]'); if (gen) openBio(gen.dataset.gen);
+  if (t.closest('[data-close]') || t === $('modal')) closeBio();
+});
+$('set-cut').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.cut = b.dataset.v==='1'; store.set('cut', b.dataset.v); syncSeg('set-cut', b.dataset.v); if (!state.cut) hideCut(); });
+$('set-trail').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.trail = b.dataset.v==='1'; store.set('trail', b.dataset.v); syncSeg('set-trail', b.dataset.v); dirty = true; });
+function setSpeed(v){ state.speed = +v; syncSeg('seg-speed', v); syncSeg('set-speed', v); }
+$('seg-speed').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setSpeed(b.dataset.v); });
+$('set-speed').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setSpeed(b.dataset.v); });
+$('play').addEventListener('click', () => { if (!state.playing && state.s >= 4) jump(0); state.playing = !state.playing; if (!state.playing) hideCut(); syncPlay(); });
+$('tl').addEventListener('input', () => { state.s = +$('tl').value; state.playing = false; syncPlay(); hideCut(); dirty = true; unitDirty = true; });
+$('ticks').addEventListener('click', e => { const b = e.target.closest('.tick'); if (b) jump(EVENTS[+b.dataset.i].s + .01); });
+$('log').addEventListener('click', e => { const b = e.target.closest('button'); if (b) jump(EVENTS[+b.dataset.i].s + .01); });
+$('cutin').addEventListener('click', hideCut);
+document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); });
+document.addEventListener('keydown', e => { if (e.key==='Escape'){ if (!$('modal').hidden) closeBio(); else if (!$('pop').hidden) $('pop').hidden = true; } });
+
+// map camera controls
+const mapEl = $('map');
+let drag = null;
+function unfollow(){ state.follow = false; $('cam-follow').setAttribute('aria-pressed','false'); }
+mapEl.addEventListener('pointerdown', e => { drag = {x:e.clientX, y:e.clientY, cx:state.cam.cx, cy:state.cam.cy, moved:false}; mapEl.setPointerCapture(e.pointerId); });
+mapEl.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dx = e.clientX-drag.x, dy = e.clientY-drag.y;
+  if (!drag.moved && Math.hypot(dx,dy) < 5) return;
+  drag.moved = true; unfollow();
+  const k = state.cam.w / Math.max(1, state.mw);
+  state.cam = {cx: drag.cx - dx*k, cy: drag.cy - dy*k, w: state.cam.w}; applyCam();
+});
+mapEl.addEventListener('pointerup', e => {
+  if (drag && !drag.moved){
+    const hit = document.elementsFromPoint(e.clientX, e.clientY).find(el => el.closest && el.closest('.unit'));
+    if (hit) select(hit.closest('.unit').dataset.id);
+  }
+  drag = null;
+});
+mapEl.addEventListener('pointercancel', () => { drag = null; });
+mapEl.addEventListener('dblclick', e => { const hit = document.elementsFromPoint(e.clientX, e.clientY).find(el => el.closest && el.closest('.unit')); if (hit) openBio(hit.closest('.unit').dataset.id); });
+mapEl.addEventListener('wheel', e => { e.preventDefault(); unfollow(); state.cam.w *= e.deltaY > 0 ? 1.12 : 0.89; applyCam(); }, {passive:false});
+$('cam-in').addEventListener('click', () => { unfollow(); state.cam.w *= .8; applyCam(); });
+$('cam-out').addEventListener('click', () => { unfollow(); state.cam.w *= 1.25; applyCam(); });
+$('cam-all').addEventListener('click', () => { unfollow(); state.cam = {cx:500, cy:310, w:1000}; applyCam(); });
+$('cam-follow').addEventListener('click', () => { state.follow = !state.follow; $('cam-follow').setAttribute('aria-pressed', String(state.follow)); });
+new ResizeObserver(entries => { for (const en of entries){ state.mw = en.contentRect.width; state.mh = en.contentRect.height; } applyCam(); dirty = true; }).observe($('mapbox'));
+
+/* ---------- boot ---------- */
+(function grain(){
+  try {
+    const c = document.createElement('canvas'); c.width = c.height = 160;
+    const x = c.getContext('2d'), img = x.createImageData(160,160), r = rng(5);
+    for (let i=0;i<img.data.length;i+=4){ const v = r(); img.data[i]=92; img.data[i+1]=72; img.data[i+2]=42; img.data[i+3] = v < .55 ? 0 : (v-.55)*70; }
+    x.putImageData(img,0,0);
+    document.documentElement.style.setProperty('--grain', `url(${c.toDataURL()})`);
+  } catch(e){}
+})();
+buildDefs();
+$('terrain').innerHTML = terrain();
+renderMenu(); renderBrief(); renderStatic();
+setDev(state.dev); syncLore(); setSpeed(1); syncSeg('set-cut', state.cut?'1':'0'); syncSeg('set-trail', state.trail?'1':'0'); syncPlay();
+go('replay');
+requestAnimationFrame(loop);
+})();
+</script>
