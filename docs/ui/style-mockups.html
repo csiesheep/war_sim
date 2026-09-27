@@ -1,0 +1,817 @@
+<title>赤壁戰圖三式</title>
+<meta name="description" content="戰役模擬器視覺風格提案：三種地圖風格 × 三種兵團風格，以赤壁之戰為樣本。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e8ebe7; --surface:#f7f8f5; --surface-2:#eef1ec; --ink:#1b201e; --muted:#58635e; --line:#cfd6d0;
+  --accent:#2c6a60; --accent-ink:#ffffff; --wei:#2a5fb0; --wu:#c23b2c; --shu:#2d8a4e; --gold:#a8822a;
+  --sans:'Noto Sans TC',system-ui,-apple-system,'PingFang TC','Microsoft JhengHei',sans-serif;
+  --serif:'Noto Serif TC','Songti TC','PMingLiU',serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1311; --surface:#171c1a; --surface-2:#1e2522; --ink:#e2e8e4; --muted:#97a49e; --line:#2b3430;
+    --accent:#6db3a5; --accent-ink:#0c1311; --wei:#6aa5ff; --wu:#ff7b67; --shu:#6fd497; --gold:#d8b45c;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1311; --surface:#171c1a; --surface-2:#1e2522; --ink:#e2e8e4; --muted:#97a49e; --line:#2b3430;
+  --accent:#6db3a5; --accent-ink:#0c1311; --wei:#6aa5ff; --wu:#ff7b67; --shu:#6fd497; --gold:#d8b45c;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6}
+.wrap{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:28px 56px;display:flex;flex-direction:column;gap:20px}
+@media (max-width:600px){.wrap{padding-inline:16px;padding-block:18px 40px}}
+
+.top{display:flex;flex-direction:column;gap:6px;max-width:72ch}
+.eyebrow{margin:0;font-size:12px;letter-spacing:.14em;color:var(--muted);font-family:var(--mono)}
+h1{margin:0;font-family:var(--serif);font-weight:900;font-size:clamp(28px,4.2vw,42px);line-height:1.15;text-wrap:balance;letter-spacing:.04em}
+.lede{margin:0;color:var(--muted);font-size:15px}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
+.ctl{display:flex;align-items:center;gap:8px;min-width:0}
+.ctl-label{font-size:12px;color:var(--muted);letter-spacing:.12em;white-space:nowrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:2px;gap:2px;max-width:100%;overflow-x:auto}
+.seg button{appearance:none;border:0;background:transparent;color:var(--ink);font:inherit;font-size:13.5px;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.seg button:hover{background:var(--surface-2)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+@media (max-width:960px){.stage{grid-template-columns:minmax(0,1fr)}}
+.map-col{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0}
+.map-scroll{overflow-x:auto;overscroll-behavior-x:contain}
+.map-inner{position:relative;aspect-ratio:1000/620;width:100%}
+.map-inner svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+#fg .unit{cursor:pointer}
+@media (max-width:700px){.map-inner{width:720px;max-width:none}}
+.pan-hint{display:none;margin:0;padding:6px 14px 0;font-size:12px;color:var(--muted)}
+@media (max-width:700px){.pan-hint{display:block}}
+
+.timeline{display:flex;align-items:center;gap:14px;padding:12px 14px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+.play{flex:none;width:42px;height:42px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;cursor:pointer}
+.play svg{width:18px;height:18px;fill:currentColor}
+.tl-main{flex:1 1 260px;min-width:0;display:flex;flex-direction:column;gap:4px}
+.tl-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.clock{font-family:var(--serif);font-weight:700;font-size:15px}
+.clock small{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:500;margin-left:6px}
+.phase{font-size:12.5px;color:var(--muted)}
+.tl-track{position:relative;padding-bottom:14px}
+#tl{width:100%;margin:0;accent-color:var(--accent);height:22px}
+.ticks{position:absolute;left:8px;right:8px;bottom:0;height:12px}
+.tick{position:absolute;top:0;transform:translateX(-50%);width:14px;height:12px;border:0;padding:0;background:transparent;cursor:pointer}
+.tick::before{content:"";position:absolute;left:3px;top:2px;width:8px;height:8px;transform:rotate(45deg);background:var(--muted);opacity:.55}
+.tick.on::before{background:var(--wu);opacity:1}
+.speed button{font-family:var(--mono);font-size:12.5px;padding:5px 9px}
+
+.panel{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+.card h3{margin:0 0 8px;font-size:12px;letter-spacing:.14em;color:var(--muted);font-weight:500}
+.now{display:grid;grid-template-columns:60px 1fr;gap:12px;align-items:center}
+.now svg{width:60px;height:60px}
+.now .big{font-family:var(--serif);font-weight:700;font-size:17px;line-height:1.3}
+.now .sub{color:var(--muted);font-size:12.5px}
+.forces{display:flex;flex-direction:column;gap:8px}
+.frow{display:grid;grid-template-columns:62px 1fr 64px;gap:8px;align-items:center;font-size:13px}
+.frow b{font-family:var(--mono);font-weight:500;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
+.bar{display:block;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px}
+.u-head{display:flex;gap:12px;align-items:center}
+.u-head svg{width:52px;height:52px;flex:none}
+.u-head h4{margin:0;font-family:var(--serif);font-size:19px;line-height:1.2}
+.u-head p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+.stats{display:grid;grid-template-columns:40px 1fr;gap:6px 10px;margin:12px 0 0;font-size:13px;align-items:center}
+.stats dt{color:var(--muted)}
+.stats dd{margin:0;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.stats dd b{font-family:var(--mono);font-weight:500;font-size:12px;font-variant-numeric:tabular-nums}
+.stats dd.plain{display:block}
+.note{margin:10px 0 0;font-size:13px;color:var(--muted)}
+.log ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;max-height:360px;overflow-y:auto}
+.log li button{all:unset;box-sizing:border-box;display:block;width:100%;padding:8px 8px 8px 10px;border-radius:6px;cursor:pointer;border-left:3px solid transparent}
+.log li button:hover{background:var(--surface-2)}
+.log li button:focus-visible{outline:2px solid var(--accent)}
+.log li.future{opacity:.45}
+.log li.cur button{border-left-color:var(--wu);background:var(--surface-2)}
+.log .ev-t{display:flex;justify-content:space-between;gap:8px;font-weight:700;font-size:13.5px}
+.log .ev-t span{font-family:var(--mono);font-weight:500;font-size:11.5px;color:var(--muted)}
+.log .ev-x{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.log .ev-s{display:inline-block;margin-top:4px;font-size:11px;padding:0 6px;border-radius:4px;border:1px solid var(--line);color:var(--muted)}
+
+.compare{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+.compare h2{margin:10px 0 0;font-family:var(--serif);font-size:22px;letter-spacing:.04em}
+.compare .intro{margin:0;color:var(--muted);max-width:70ch}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:900px){.grid3{grid-template-columns:minmax(0,1fr)}}
+.opt{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.opt.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.thumb{aspect-ratio:1000/620;max-width:100%;border-bottom:1px solid var(--line)}
+.thumb.army{aspect-ratio:300/150}
+.thumb svg{width:100%;height:100%;display:block}
+.opt-body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.opt h3{margin:0;font-family:var(--serif);font-size:18px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.tag{font-family:var(--sans);font-size:11.5px;font-weight:500;color:var(--accent);letter-spacing:.08em}
+.opt p{margin:0;font-size:13.5px}
+.pc{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.pc li{padding-left:18px;position:relative}
+.pc li::before{position:absolute;left:0;top:0;font-weight:700}
+.pc .pro::before{content:"＋";color:var(--shu)}
+.pc .con::before{content:"－";color:var(--wu)}
+.opt .use{margin-top:auto;align-self:flex-start;appearance:none;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font:inherit;font-size:13px;padding:6px 12px;border-radius:6px;cursor:pointer}
+.opt .use:hover{border-color:var(--accent)}
+.opt.sel .use{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.reco{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:6px;padding:14px 16px;max-width:90ch}
+.reco h3{margin:0 0 6px;font-size:15px}
+.reco p{margin:0 0 6px}
+.reco p:last-child{margin:0}
+.scale-legend{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">WAR SIM · 視覺風格提案 v0.1</p>
+    <h1>赤壁戰圖三式</h1>
+    <p class="lede">同一場赤壁之戰（建安十三年冬，208 年），用三種地圖風格、三種兵團風格呈現。拖曳時間軸或按播放，看戰局隨時辰推進；點地圖上的兵團看詳細資料。</p>
+  </header>
+
+  <section class="controls" aria-label="風格切換">
+    <div class="ctl"><span class="ctl-label">地圖</span>
+      <div class="seg" id="seg-map"><button type="button" data-v="silk">絹本水墨</button><button type="button" data-v="modern">現代戰史圖</button><button type="button" data-v="sand">沙盤夜戰</button></div></div>
+    <div class="ctl"><span class="ctl-label">兵團</span>
+      <div class="seg" id="seg-army"><button type="button" data-v="symbol">軍事符號</button><button type="button" data-v="banner">帥旗頭像</button><button type="button" data-v="token">旗牌合一</button></div></div>
+    <div class="ctl"><span class="ctl-label">史觀</span>
+      <div class="seg" id="seg-lore"><button type="button" data-v="history">正史</button><button type="button" data-v="novel">演義</button></div></div>
+  </section>
+
+  <section class="stage">
+    <div class="map-col">
+      <p class="pan-hint">← 左右滑動地圖 →</p>
+      <div class="map-scroll" id="map-scroll">
+        <div class="map-inner">
+          <svg id="bg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+          <svg id="fg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet" role="img" aria-label="赤壁之戰戰場地圖與兵團位置"></svg>
+        </div>
+      </div>
+      <div class="timeline">
+        <button type="button" class="play" id="play" aria-label="播放"></button>
+        <div class="tl-main">
+          <div class="tl-head"><span class="clock" id="clock"></span><span class="phase" id="phase"></span></div>
+          <div class="tl-track">
+            <input type="range" id="tl" min="0" max="3" step="0.001" value="1.9" aria-label="時間軸">
+            <div class="ticks" id="ticks"></div>
+          </div>
+        </div>
+        <div class="seg speed" id="seg-speed"><button type="button" data-v="1">1×</button><button type="button" data-v="2">2×</button><button type="button" data-v="4">4×</button></div>
+      </div>
+    </div>
+
+    <aside class="panel">
+      <div class="card now">
+        <svg viewBox="-30 -30 60 60" aria-hidden="true" id="compass"></svg>
+        <div><div class="big" id="wx"></div><div class="sub" id="wx-sub"></div></div>
+      </div>
+      <div class="card"><h3>各方兵力</h3><div class="forces" id="forces"></div></div>
+      <div class="card" id="unit-card"></div>
+      <div class="card log"><h3>戰報</h3><ol id="log"></ol></div>
+    </aside>
+  </section>
+
+  <section class="compare">
+    <h2>三種地圖風格</h2>
+    <p class="intro">同一時刻（火燒連環船）在三種底圖上的樣子。點「套用」會切換上方主畫面。</p>
+    <div class="grid3" id="map-cards"></div>
+
+    <h2>三種兵團風格</h2>
+    <p class="intro">以曹操、周瑜、關羽為例。三種風格都能疊在任何一種地圖上。</p>
+    <div class="grid3" id="army-cards"></div>
+
+    <div class="reco">
+      <h3>我的建議</h3>
+      <p><b>底圖：</b>歷史重播預設用「絹本水墨」，另提供「現代戰史圖」讓想看清楚戰術的玩家切換。「沙盤夜戰」留給之後的親自指揮模式，六角格可以直接當下令的格子。</p>
+      <p><b>兵團：</b>依縮放自動切換。看全局時用「軍事符號」，兵團多也不亂；放大或點選時換成「旗牌合一」；劇情高潮（如黃蓋火船）用「帥旗頭像」特寫。</p>
+      <p><b>史觀：</b>正史、演義用同一套地圖與兵團，差別只在事件與部分兵團（例如演義才有華容道關羽）。戰報會標出處。</p>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+const W = 1000, H = 620, RW = 56;
+const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- color + math helpers ---------- */
+const hx = h => [1,3,5].map(i => parseInt(h.slice(i,i+2),16));
+const toHex = a => '#' + a.map(v => Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');
+const mix = (a,b,t) => { const A = hx(a), B = hx(b); return toHex(A.map((v,i) => v + (B[i]-v)*t)); };
+const clamp01 = v => Math.max(0, Math.min(1, v));
+const lerp = (a,b,t) => a + (b-a)*t;
+function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const f1 = n => (Math.round(n*10)/10).toString();
+
+/* ---------- geography ---------- */
+const RIVER = [[-40,478],[120,452],[280,414],[430,372],[580,340],[730,314],[880,284],[1040,254]];
+function riverY(x){ for (let i=0;i<RIVER.length-1;i++){ const [x0,y0]=RIVER[i],[x1,y1]=RIVER[i+1]; if (x>=x0 && x<=x1) return y0+(y1-y0)*(x-x0)/(x1-x0); } return RIVER[RIVER.length-1][1]; }
+const N = (x,d) => [x, Math.round(riverY(x)-d)];
+const S = (x,d) => [x, Math.round(riverY(x)+d)];
+function smooth(pts){
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i=0;i<pts.length-1;i++){
+    const p0=pts[i-1]||pts[i], p1=pts[i], p2=pts[i+1], p3=pts[i+2]||p2;
+    d += ` C${f1(p1[0]+(p2[0]-p0[0])/6)},${f1(p1[1]+(p2[1]-p0[1])/6)} ${f1(p2[0]-(p3[0]-p1[0])/6)},${f1(p2[1]-(p3[1]-p1[1])/6)} ${p2[0]},${p2[1]}`;
+  }
+  return d;
+}
+const RIVER_D = smooth(RIVER);
+const HAN_D = smooth([[995,-10],[968,80],[934,170],[926,230],[930,276]]);
+const ROAD = [[430,252],[345,222],[250,195],[150,150],[40,116]];
+const ROAD_D = smooth(ROAD);
+const MARSH = {cx:232, cy:228, rx:118, ry:40};
+const MTNS = [[560,96,.9],[640,128,1.15],[725,92,1],[805,140,.9],[90,330,.8],[40,262,.7],
+              [690,472,1.1],[792,446,1],[884,494,.9],[382,544,1],[482,518,.8],[190,584,.9],[962,424,.8]];
+const WEI_CAMP = [390,415,440,465,490,515].map(x => N(x, 70));
+const WU_CAMP = [610,635,660].map(x => S(x, 78));
+const CLIFF = [];
+for (let x=512; x<=616; x+=8) CLIFF.push(S(x, 60));
+
+/* ---------- styles ---------- */
+const STYLES = {
+  silk:  {key:'silk', wei:'#2c4a7c', wu:'#a3301f', shu:'#3f6a34', ink:'#2b241b', halo:'#e2d3ad', panel:'#f1e6c9', avBg:'#e3d3ab', paper:'#e0cfa6', sel:'#b8321f', night:'#1b1d33', nightA:.42, font:"'LXGW WenKai TC','Noto Serif TC',serif", cal:"'LXGW WenKai TC','Noto Serif TC',serif"},
+  modern:{key:'modern', wei:'#2a5fb0', wu:'#c23b2c', shu:'#2d8a4e', ink:'#1c2227', halo:'#f4f5ef', panel:'#ffffff', avBg:'#dde4ea', paper:'#edf0e4', sel:'#111111', night:'#14203c', nightA:.3, font:"'Noto Sans TC',sans-serif", cal:"'Noto Serif TC',serif"},
+  sand:  {key:'sand', wei:'#61a5ff', wu:'#ff6a55', shu:'#62d68e', ink:'#e3ece5', halo:'#0e1310', panel:'#18201b', avBg:'#2a342e', paper:'#1b221d', sel:'#ffd35a', night:'#02040c', nightA:.45, font:"'Noto Sans TC',sans-serif", cal:"'Noto Serif TC',serif"},
+};
+const FNAME = {wei:'曹操軍', wu:'孫權軍', shu:'劉備軍'};
+const TYPE = {inf:'步兵', cav:'騎兵', navy:'水軍', fire:'火船'};
+const SIZE = {I:'百人級', II:'千人級', III:'數千人', XX:'萬人級', XXX:'數萬人'};
+
+/* ---------- scenario ---------- */
+const UNITS = [
+  {id:'caocao', f:'wei', gen:'曹操', sur:'曹', title:'曹操本陣', type:'inf', size:'XXX', beard:'short',
+   kf:[[0,N(430,120),60000,78],[1.75,N(430,120),60000,74],[2.3,N(420,125),50000,40],[3,[205,172],26000,22]],
+   st:[[0,'駐守烏林大營'],[1.95,'大營延燒'],[2.3,'撤退'],[2.55,'走華容道，道路泥濘']],
+   note:{history:'率大軍順江東下，屯於烏林。軍中已有疾疫。', novel:'號稱八十三萬大軍，志在一舉平定江東。'}},
+  {id:'caochun', f:'wei', gen:'曹純', sur:'曹', title:'虎豹騎', type:'cav', size:'III', beard:'short',
+   kf:[[0,N(320,110),5000,85],[1.9,N(320,110),5000,82],[2.4,N(360,150),4600,60],[3,[262,146],3800,45]],
+   st:[[0,'待命'],[1.9,'護衛主公'],[2.4,'開路，填草過泥濘']],
+   note:{history:'曹操親軍精騎，撤退時負責開路與護衛。', novel:'曹操親軍精騎，撤退時負責開路與護衛。'}},
+  {id:'fleet', f:'wei', gen:'荊州水軍', sur:'曹', title:'連環船隊', type:'navy', size:'XXX', beard:'none',
+   kf:[[0,N(470,24),80000,60],[1.75,N(470,24),80000,58],[2.15,N(470,24),22000,12],[3,N(470,24),6000,5]],
+   st:[[0,'船艦首尾相接'],[1.75,'起火'],[2.1,'潰散']],
+   note:{history:'收編荊州水軍，船艦首尾相接；北方士卒不習水戰，又染疫病。', novel:'依龐統之計以鐵環連鎖，北軍如履平地，卻無法各自散開。'}},
+  {id:'zhouyu', f:'wu', gen:'周瑜', sur:'周', title:'吳軍主力', type:'navy', size:'XX', beard:'none', hat:'scarf',
+   kf:[[0,S(580,30),20000,82],[1,S(580,30),20000,85],[1.9,S(585,12),19500,90],[2.4,N(520,20),19000,92],[3,N(440,95),18000,92]],
+   st:[[0,'屯赤壁'],[1.9,'輕銳繼進'],[2.5,'登岸追擊']],
+   note:{history:'與程普為左右督，率吳軍約三萬人迎戰。', novel:'與諸葛亮不約而同，皆以「火」字定破曹之計。'}},
+  {id:'huanggai', f:'wu', gen:'黃蓋', sur:'黃', title:'火船隊', type:'fire', size:'II', beard:'grey',
+   kf:[[0,S(660,30),2000,90],[1,S(640,25),2000,95],[1.75,N(528,4),2000,95],[2.1,N(522,6),1200,80],[3,S(560,20),1100,80]],
+   st:[[0,'備蒙衝鬥艦'],[1,'詐降，揚帆而來'],[1.75,'縱火'],[2.1,'中流矢墮水，獲救']],
+   note:{history:'獻火攻之策，親率火船詐降。', novel:'受苦肉計，以詐降取信曹操。'}},
+  {id:'chengpu', f:'wu', gen:'程普', sur:'程', title:'吳軍右督', type:'navy', size:'XX', beard:'short',
+   kf:[[0,S(740,30),10000,80],[1.9,S(700,20),10000,82],[2.5,N(600,20),9800,88],[3,N(560,100),9500,90]],
+   st:[[0,'待命'],[1.9,'進兵'],[2.5,'登岸追擊']],
+   note:{history:'與周瑜分任左右督。', novel:'與周瑜分任左右督。'}},
+  {id:'liubei', f:'shu', gen:'劉備', sur:'劉', title:'劉備軍', type:'inf', size:'XX', beard:'short',
+   kf:[[0,N(880,100),20000,75],[1.9,N(870,100),20000,76],[2.5,N(700,110),19500,85],[3,N(350,95),19000,88]],
+   st:[[0,'屯樊口'],[1.9,'水陸並進'],[2.5,'追擊曹軍']],
+   note:{history:'與周瑜水陸並進，追擊曹軍至南郡。', novel:'遣趙雲、張飛等分路埋伏，截擊敗走的曹軍。'}},
+  {id:'guanyu', f:'shu', gen:'關羽', sur:'關', title:'華容道伏兵', type:'cav', size:'I', beard:'long', face:'#a9432e', lore:'novel',
+   kf:[[2.45,[150,142],500,95],[3,[150,142],500,95]],
+   st:[[2.45,'伏於華容道'],[2.85,'義釋曹操']],
+   note:{novel:'奉諸葛亮之命伏於華容道，念舊日之恩放走曹操。'}},
+];
+UNITS.forEach(u => u.init = u.kf[0][2]);
+
+const EVENTS = [
+  {s:0, title:'曹軍連船', text:{history:'「操軍方連船艦，首尾相接，可燒而走也。」黃蓋向周瑜獻火攻之策。', novel:'龐統獻連環計，曹操以鐵環連鎖戰船，北軍如履平地。'},
+   src:{history:'《三國志・周瑜傳》', novel:'《三國演義》第四十七、四十八回'}},
+  {s:0.9, title:'東南風起', text:{history:'「時東南風急」，黃蓋以十艘戰艦在最前，行至江中舉帆。', novel:'諸葛亮登七星壇祭風，借得東南大風。'},
+   src:{history:'《江表傳》（裴松之注引）', novel:'《三國演義》第四十九回'}},
+  {s:1, title:'黃蓋詐降', text:{history:'取蒙衝鬥艦數十艘，實以薪草，膏油灌其中，先書報曹公，欺以欲降。', novel:'黃蓋受苦肉計後詐降，火船插青龍牙旗而來。'},
+   src:{history:'《三國志・周瑜傳》', novel:'《三國演義》第四十六、四十九回'}},
+  {s:1.75, title:'火燒連環船', text:{history:'「時風盛猛，悉延燒岸上營落。頃之，煙炎張天，人馬燒溺死者甚眾。」', novel:'火趁風威，風助火勢，江面上一派通紅，漫天徹地。'},
+   src:{history:'《三國志・周瑜傳》', novel:'《三國演義》第四十九回'}},
+  {s:2.1, title:'黃蓋墮水', text:{history:'黃蓋中流矢墮水，被吳軍救起，韓當認出後為他解衣療傷。', novel:'張遼一箭射中黃蓋，黃蓋落水，被韓當救起。'},
+   src:{history:'《吳書》（裴松之注引）', novel:'《三國演義》第四十九回'}},
+  {s:2.55, title:'敗走華容道', text:{history:'「引軍從華容道步歸，遇泥濘，道不通……悉使羸兵負草填之，騎乃得過。」', novel:'關雲長念舊日之恩，於華容道義釋曹操。'},
+   src:{history:'《山陽公載記》（裴松之注引）', novel:'《三國演義》第五十回'}},
+  {s:2.95, title:'曹操北還', text:{history:'「公至赤壁，與備戰，不利。於是大疫，吏士多死者，乃引軍還。」', novel:'曹操回到南郡，留曹仁守城，自回許昌。'},
+   src:{history:'《三國志・武帝紀》', novel:'《三國演義》第五十回'}},
+];
+const PHASES = [[0,'兩軍隔江對峙'],[0.9,'東南風起'],[1,'黃蓋詐降'],[1.75,'火燒連環船'],[2.3,'曹軍潰退'],[2.55,'敗走華容道'],[2.95,'曹操北還']];
+const HK = [[0,12],[0.9,18.5],[1,20],[1.75,22],[2.5,27],[3,34]];
+const SC = '子丑寅卯辰巳午未申酉戌亥';
+
+function hourAt(s){ for (let i=0;i<HK.length-1;i++){ if (s<=HK[i+1][0]) return lerp(HK[i][1],HK[i+1][1],(s-HK[i][0])/(HK[i+1][0]-HK[i][0])); } return 34; }
+function nightAt(h){ return h<18?0 : h<20?(h-18)/2 : h<29?1 : h<31?1-(h-29)/2 : 0; }
+function clockAt(s){
+  const h = hourAt(s), day = h<24?'第一日':'第二日', hh = h%24;
+  const idx = Math.floor(((hh+1)%24)/2);
+  const hr = Math.floor(hh), mn = Math.floor((hh-hr)*60/15)*15;
+  return {day, sc: SC[idx]+'時', hm: String(hr).padStart(2,'0')+':'+String(mn).padStart(2,'0')};
+}
+function windAt(s){
+  const a = s<.85 ? 135 : s>.95 ? 315 : 135 + 180*(s-.85)/.1;
+  return {a, name: s<.9?'西北風':'東南風', force: s<.9?2:5};
+}
+function fireI(s){ return s<1.75?0 : s<2.05?(s-1.75)/.3 : Math.max(.3, 1-(s-2.05)*.7); }
+function phaseAt(s){ let p = PHASES[0][1]; for (const [t,n] of PHASES) if (s>=t) p = n; return p; }
+
+function visible(u, s, lore){ if (u.lore && u.lore!==lore) return false; return s >= u.kf[0][0]; }
+function stateAt(u, s){
+  const k = u.kf;
+  if (s <= k[0][0]) return {x:k[0][1][0], y:k[0][1][1], str:k[0][2], mor:k[0][3]};
+  for (let i=0;i<k.length-1;i++){
+    if (s <= k[i+1][0]){
+      const t = (s-k[i][0])/(k[i+1][0]-k[i][0]), e = t*t*(3-2*t);
+      return {x:lerp(k[i][1][0],k[i+1][1][0],e), y:lerp(k[i][1][1],k[i+1][1][1],e), str:lerp(k[i][2],k[i+1][2],t), mor:lerp(k[i][3],k[i+1][3],t)};
+    }
+  }
+  const l = k[k.length-1]; return {x:l[1][0], y:l[1][1], str:l[2], mor:l[3]};
+}
+function statusAt(u, s){ let t = u.st[0][1]; for (const [a,b] of u.st) if (s>=a) t = b; return t; }
+function fmtStr(n){ n = Math.round(n); if (n>=10000) return f1(n/10000)+'萬'; return n.toLocaleString('en-US'); }
+
+/* ---------- text helpers ---------- */
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function label(x,y,str,P,size,opts=''){ return `<text x="${f1(x)}" y="${f1(y)}" text-anchor="middle" font-size="${size}" fill="${P.ink}" stroke="${P.halo}" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke" font-family="${P.font}" ${opts}>${esc(str)}</text>`; }
+function vtext(x,y,str,size,attrs){ return [...str].map((c,i) => `<text x="${x}" y="${f1(y+i*size*1.1)}" text-anchor="middle" font-size="${size}" ${attrs}>${c}</text>`).join(''); }
+
+/* ---------- backgrounds ---------- */
+function bgSilk(){
+  const P = STYLES.silk, R = rng(7);
+  let o = `<defs>
+  <filter id="silk-noise" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .23  0 0 0 0 .13  .55 0 0 0 -.19"/></filter>
+  <filter id="silk-stain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".005" numOctaves="3" seed="11"/><feColorMatrix values="0 0 0 0 .45  0 0 0 0 .33  0 0 0 0 .16  .75 0 0 0 -.3"/></filter>
+  <filter id="silk-rough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="2" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="5" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="silk-wash" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter>
+  <linearGradient id="silk-mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d5a55"/><stop offset=".55" stop-color="#6f8d71" stop-opacity=".8"/><stop offset="1" stop-color="#b9a878" stop-opacity=".15"/></linearGradient>
+  <pattern id="silk-wave" width="22" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-14)"><path d="M0,5 Q5.5,.5 11,5 T22,5" fill="none" stroke="#56686c" stroke-width=".9" opacity=".6"/></pattern>
+  </defs>`;
+  o += `<rect width="${W}" height="${H}" fill="${P.paper}"/><rect width="${W}" height="${H}" filter="url(#silk-stain)"/><rect width="${W}" height="${H}" filter="url(#silk-noise)"/>`;
+  // marsh
+  o += `<ellipse cx="${MARSH.cx}" cy="${MARSH.cy}" rx="${MARSH.rx}" ry="${MARSH.ry}" fill="#8f9a78" opacity=".35" filter="url(#silk-wash)"/>`;
+  let reeds = '';
+  for (let i=0;i<46;i++){ const a=R()*Math.PI*2, r=Math.sqrt(R()); const x=MARSH.cx+Math.cos(a)*r*MARSH.rx*.9, y=MARSH.cy+Math.sin(a)*r*MARSH.ry*.85;
+    reeds += `M${f1(x-5)},${f1(y)} h10 M${f1(x-1)},${f1(y)} l-2,-6 M${f1(x+2)},${f1(y)} l1.5,-7 `; }
+  o += `<path d="${reeds}" stroke="${P.ink}" stroke-width=".8" fill="none" opacity=".55"/>`;
+  // mountains (青綠山水)
+  for (const [x,y,s] of MTNS){
+    const p = `M${x-44*s},${y} Q${x-28*s},${y-30*s} ${x-14*s},${y-54*s} Q${x-2*s},${y-34*s} ${x+8*s},${y-42*s} Q${x+24*s},${y-22*s} ${x+44*s},${y} Z`;
+    o += `<path d="${p}" fill="url(#silk-mtn)" stroke="${P.ink}" stroke-width="1.3" filter="url(#silk-rough)"/>`;
+    o += `<path d="M${x-14*s},${y-50*s} q-4,${14*s} -12,${26*s} M${x+8*s},${y-38*s} q3,${10*s} 10,${20*s} M${x-4*s},${y-30*s} q-2,${8*s} -6,${16*s}" stroke="${P.ink}" stroke-width=".8" fill="none" opacity=".6"/>`;
+  }
+  // rivers
+  for (const [d,w] of [[RIVER_D,RW],[HAN_D,13]]){
+    o += `<path d="${d}" fill="none" stroke="${P.ink}" stroke-width="${2*w+4}" stroke-linecap="round" opacity=".85" filter="url(#silk-rough)"/>`;
+    o += `<path d="${d}" fill="none" stroke="#cfcdb0" stroke-width="${2*w}" stroke-linecap="round"/>`;
+    o += `<path d="${d}" fill="none" stroke="url(#silk-wave)" stroke-width="${2*w-4}" stroke-linecap="round"/>`;
+  }
+  // red cliff
+  o += `<path d="${smooth(CLIFF)}" fill="none" stroke="#9c3a22" stroke-width="9" stroke-linecap="round" opacity=".75" filter="url(#silk-rough)"/>`;
+  // road
+  o += `<path d="${ROAD_D}" fill="none" stroke="#5a4630" stroke-width="1.8" stroke-dasharray="3 5" stroke-linecap="round"/>`;
+  // camps
+  for (const [x,y] of WEI_CAMP.concat(WU_CAMP)) o += `<path d="M${x-6},${y+5} L${x},${y-5} L${x+6},${y+5} Z" fill="none" stroke="${P.ink}" stroke-width="1.1"/>`;
+  // city 夏口
+  o += `<g transform="translate(938,352)"><rect x="-9" y="-7" width="18" height="14" fill="#e6d8b2" stroke="${P.ink}" stroke-width="1.3"/><path d="M-9,-7 v-3 h4 v3 M-2,-7 v-3 h4 v3 M5,-7 v-3 h4 v3" stroke="${P.ink}" stroke-width="1.1" fill="none"/></g>`;
+  // labels
+  const L = `fill="${P.ink}" font-family="${P.font}" font-weight="700"`;
+  o += vtext(528,232,'烏林',22,L) + vtext(470,470,'赤壁',24,L) + vtext(962,372,'夏口',17,L);
+  o += `<text x="232" y="232" text-anchor="middle" font-size="16" ${L} opacity=".85" letter-spacing="4">雲夢澤</text>`;
+  o += vtext(282,150,'華容道',15,L);
+  o += `<text x="52" y="100" text-anchor="middle" font-size="13" ${L}>往江陵</text>`;
+  o += `<text transform="translate(250,432) rotate(-14)" text-anchor="middle" font-size="18" ${L} opacity=".75" letter-spacing="10">長江</text>`;
+  o += `<text transform="translate(790,315) rotate(-11)" text-anchor="middle" font-size="16" ${L} opacity=".6" letter-spacing="10">大江</text>`;
+  o += vtext(906,70,'漢水',14,L+' opacity=".7"');
+  // cartouche + seal
+  o += `<rect x="918" y="18" width="60" height="176" fill="#ead9ae" stroke="${P.ink}" stroke-width="1.6"/><rect x="923" y="23" width="50" height="166" fill="none" stroke="${P.ink}" stroke-width=".7"/>`;
+  o += vtext(948,56,'赤壁鏖兵圖',25,`fill="${P.ink}" font-family="${P.cal}" font-weight="700"`);
+  o += `<rect x="932" y="204" width="32" height="58" rx="3" fill="#b3321f"/>` + vtext(948,229,'赤壁',21,`fill="#f3e3c3" font-family="${P.cal}" font-weight="700"`);
+  // scale
+  o += `<g transform="translate(34,586)"><path d="M0,0 h100 M0,-5 v10 M50,-4 v8 M100,-5 v10" stroke="${P.ink}" stroke-width="1.5"/><text x="116" y="5" font-size="13" ${L}>六十里</text></g>`;
+  // frame
+  o += `<rect x="6" y="6" width="${W-12}" height="${H-12}" fill="none" stroke="${P.ink}" stroke-width="2.2"/><rect x="12" y="12" width="${W-24}" height="${H-24}" fill="none" stroke="${P.ink}" stroke-width=".7"/>`;
+  return o;
+}
+
+function bgModern(){
+  const P = STYLES.modern;
+  let o = `<defs>
+  <pattern id="mod-marsh" width="16" height="10" patternUnits="userSpaceOnUse"><path d="M2,7 h9 M5,7 v-3 M8,7 v-3" stroke="#4a84a8" stroke-width=".8" fill="none"/></pattern>
+  </defs>`;
+  o += `<rect width="${W}" height="${H}" fill="${P.paper}"/>`;
+  // hills: hypsometric contour rings
+  const tints = ['#e5e2c9','#dbd2af','#cebf93','#bfa978'];
+  for (const [x,y,s] of MTNS){
+    for (let i=0;i<4;i++) o += `<ellipse cx="${x+i*3*s}" cy="${y-18*s-i*7*s}" rx="${(58-12*i)*s}" ry="${(30-6*i)*s}" fill="${tints[i]}" stroke="#9c8455" stroke-width=".6"/>`;
+  }
+  // grid
+  let g = '';
+  for (let x=100;x<W;x+=100) g += `M${x},0 V${H} `;
+  for (let y=100;y<H;y+=100) g += `M0,${y} H${W} `;
+  o += `<path d="${g}" stroke="#1c2227" stroke-width=".6" opacity=".12"/>`;
+  // marsh
+  o += `<ellipse cx="${MARSH.cx}" cy="${MARSH.cy}" rx="${MARSH.rx}" ry="${MARSH.ry}" fill="url(#mod-marsh)" stroke="#4a84a8" stroke-width=".8" stroke-dasharray="4 3"/>`;
+  // rivers
+  for (const [d,w] of [[RIVER_D,RW],[HAN_D,13]]){
+    o += `<path d="${d}" fill="none" stroke="#5f8db0" stroke-width="${2*w+3}" stroke-linecap="round"/>`;
+    o += `<path d="${d}" fill="none" stroke="#b5d1e4" stroke-width="${2*w}" stroke-linecap="round"/>`;
+  }
+  // cliff hachures
+  let hch = '';
+  for (let x=514;x<=614;x+=6){ const y = riverY(x)+RW+2; hch += `M${x},${f1(y)} l-3,9 `; }
+  o += `<path d="${hch}" stroke="#7a4a2a" stroke-width="1.4"/>`;
+  // road
+  o += `<path d="${ROAD_D}" fill="none" stroke="#8b5a2b" stroke-width="2.2" stroke-dasharray="9 4"/>`;
+  // camps
+  for (const [x,y] of WEI_CAMP) o += `<path d="M${x},${y+5} v-11 l7,3 l-7,3" fill="${P.wei}" stroke="${P.wei}" stroke-width="1.2"/>`;
+  for (const [x,y] of WU_CAMP) o += `<path d="M${x},${y+5} v-11 l7,3 l-7,3" fill="${P.wu}" stroke="${P.wu}" stroke-width="1.2"/>`;
+  // city
+  o += `<rect x="933" y="347" width="10" height="10" fill="${P.ink}"/>`;
+  // labels
+  const pl = (x,y,t,sz=13,ex='') => label(x,y,t,P,sz,`font-weight="700" ${ex}`);
+  o += pl(530,262,'烏林') + pl(560,452,'赤壁（南岸崖壁）',12) + pl(938,375,'夏口') + pl(252,170,'華容道',12) + pl(64,104,'← 往江陵',12);
+  o += `<text x="232" y="236" text-anchor="middle" font-size="13" fill="#2f6c93" font-family="${P.font}" letter-spacing="5">雲夢澤</text>`;
+  o += `<text transform="translate(250,436) rotate(-14)" text-anchor="middle" font-size="14" fill="#2f6c93" font-family="${P.font}" font-weight="700" letter-spacing="12">長江</text>`;
+  o += `<text transform="translate(905,120) rotate(-68)" text-anchor="middle" font-size="12" fill="#2f6c93" font-family="${P.font}" letter-spacing="6">漢水</text>`;
+  // grid refs
+  const cols = 'ABCDEFGHIJ';
+  for (let i=0;i<10;i++) o += `<text x="${50+i*100}" y="${H-8}" text-anchor="middle" font-size="10" fill="#1c2227" opacity=".45" font-family="IBM Plex Mono,monospace">${cols[i]}</text>`;
+  for (let j=0;j<6;j++) o += `<text x="${W-10}" y="${54+j*100}" text-anchor="middle" font-size="10" fill="#1c2227" opacity=".45" font-family="IBM Plex Mono,monospace">${j+1}</text>`;
+  // title box
+  o += `<g transform="translate(20,20)"><rect width="270" height="66" fill="#ffffff" stroke="${P.ink}" stroke-width="1.2"/><text x="14" y="28" font-size="20" font-weight="700" fill="${P.ink}" font-family="${P.font}">赤壁之戰</text><text x="14" y="50" font-size="11.5" fill="#4b555c" font-family="${P.font}">建安十三年冬（208 年）・長江中游</text>
+    <g font-size="10.5" font-family="${P.font}" fill="${P.ink}"><rect x="118" y="17" width="10" height="10" fill="${P.wei}"/><text x="132" y="26">曹</text><rect x="152" y="17" width="10" height="10" fill="${P.wu}"/><text x="166" y="26">孫</text><rect x="186" y="17" width="10" height="10" fill="${P.shu}"/><text x="200" y="26">劉</text></g></g>`;
+  // north arrow + scale
+  o += `<g transform="translate(958,548)"><path d="M0,-22 L7,6 L0,1 L-7,6 Z" fill="${P.ink}"/><text x="0" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="${P.ink}" font-family="IBM Plex Mono,monospace">N</text></g>`;
+  o += `<g transform="translate(28,572)" font-family="IBM Plex Mono,monospace" font-size="10" fill="${P.ink}"><rect x="0" y="0" width="50" height="6" fill="${P.ink}"/><rect x="50" y="0" width="50" height="6" fill="#fff" stroke="${P.ink}"/><text x="0" y="20">0</text><text x="46" y="20">30</text><text x="94" y="20">60 里</text><text x="0" y="34" font-family="${P.font}">約 25 公里（1 漢里 ≈ 415 公尺）</text></g>`;
+  return o;
+}
+
+function bgSand(){
+  const P = STYLES.sand, r = 18, w = Math.sqrt(3)*r;
+  let o = `<defs>
+  <radialGradient id="sand-base" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#2b3429"/><stop offset="1" stop-color="#121612"/></radialGradient>
+  <filter id="sand-noise" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".012" numOctaves="4" seed="9"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .37  0 0 0 0 .26  .9 0 0 0 -.35"/></filter>
+  <radialGradient id="sand-hill" fx=".38" fy=".32"><stop offset="0" stop-color="#8a9a72" stop-opacity=".95"/><stop offset=".55" stop-color="#4c5a44" stop-opacity=".6"/><stop offset="1" stop-color="#20281f" stop-opacity="0"/></radialGradient>
+  <filter id="sand-blur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="8"/></filter>
+  <filter id="sand-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <pattern id="sand-hex" width="${f1(w)}" height="${3*r}" patternUnits="userSpaceOnUse"><path d="M${f1(w/2)},0 L${f1(w)},${r/2} L${f1(w)},${1.5*r} L${f1(w/2)},${2*r} L0,${1.5*r} L0,${r/2} Z M${f1(w/2)},${2*r} L${f1(w/2)},${3*r}" fill="none" stroke="#cfe8d6" stroke-width=".6" opacity=".14"/></pattern>
+  <radialGradient id="sand-vig" cx="50%" cy="50%" r="72%"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".7"/></radialGradient>
+  </defs>`;
+  o += `<rect width="${W}" height="${H}" fill="url(#sand-base)"/><rect width="${W}" height="${H}" filter="url(#sand-noise)"/>`;
+  for (const [x,y,s] of MTNS) o += `<ellipse cx="${x}" cy="${y-18*s}" rx="${72*s}" ry="${44*s}" fill="url(#sand-hill)"/>`;
+  o += `<ellipse cx="${MARSH.cx}" cy="${MARSH.cy}" rx="${MARSH.rx}" ry="${MARSH.ry}" fill="#1d3b36" opacity=".85" filter="url(#sand-blur)"/>`;
+  for (const [d,w2] of [[RIVER_D,RW],[HAN_D,13]]){
+    o += `<path d="${d}" fill="none" stroke="#0f6272" stroke-width="${2*w2+18}" stroke-linecap="round" opacity=".35" filter="url(#sand-blur)"/>`;
+    o += `<path d="${d}" fill="none" stroke="#0c3740" stroke-width="${2*w2}" stroke-linecap="round"/>`;
+    o += `<path d="${d}" fill="none" stroke="#2a95a6" stroke-width="1.2" stroke-dasharray="2 12" opacity=".7"/>`;
+  }
+  o += `<path d="${smooth(CLIFF)}" fill="none" stroke="#c0573c" stroke-width="5" stroke-linecap="round" opacity=".8" filter="url(#sand-glow)"/>`;
+  o += `<path d="${ROAD_D}" fill="none" stroke="#d6b76a" stroke-width="1.6" stroke-dasharray="2 5" opacity=".75"/>`;
+  for (const [x,y] of WEI_CAMP) o += `<rect x="${x-4}" y="${y-4}" width="8" height="8" fill="none" stroke="${P.wei}" stroke-width="1.2" opacity=".75"/>`;
+  for (const [x,y] of WU_CAMP) o += `<rect x="${x-4}" y="${y-4}" width="8" height="8" fill="none" stroke="${P.wu}" stroke-width="1.2" opacity=".75"/>`;
+  o += `<path d="M938,344 l8,8 l-8,8 l-8,-8 Z" fill="#e6d49a" filter="url(#sand-glow)"/>`;
+  o += `<rect width="${W}" height="${H}" fill="url(#sand-hex)"/>`;
+  o += `<rect width="${W}" height="${H}" fill="url(#sand-vig)"/>`;
+  const sl = (x,y,t,sz=12,c='#d8e6dc',ex='') => `<text x="${x}" y="${y}" text-anchor="middle" font-size="${sz}" fill="${c}" font-family="${P.font}" font-weight="700" letter-spacing="3" opacity=".8" ${ex}>${t}</text>`;
+  o += sl(532,258,'烏林') + sl(560,452,'赤壁') + sl(938,378,'夏口') + sl(254,172,'華容道',11) + sl(62,104,'◂ 江陵',11) + sl(232,232,'雲夢澤',12,'#7fc6b8');
+  o += `<text transform="translate(250,436) rotate(-14)" text-anchor="middle" font-size="13" fill="#6fc3cf" font-family="${P.font}" font-weight="700" letter-spacing="14" opacity=".8">長江</text>`;
+  // HUD
+  const hud = '#9fd3b4';
+  o += `<g stroke="${hud}" stroke-width="1.5" fill="none" opacity=".6"><path d="M14,40 V14 H40 M${W-40},14 H${W-14} V40 M14,${H-40} V${H-14} H40 M${W-40},${H-14} H${W-14} V${H-40}"/></g>`;
+  o += `<text x="26" y="34" font-size="11" fill="${hud}" font-family="IBM Plex Mono,monospace" letter-spacing="2" opacity=".85">CHIBI · 208 · HEX 18</text>`;
+  o += `<g transform="translate(28,586)" font-family="IBM Plex Mono,monospace" font-size="10" fill="${hud}" opacity=".85"><path d="M0,0 h100 M0,-4 v8 M100,-4 v8" stroke="${hud}"/><text x="110" y="4">60 里</text></g>`;
+  return o;
+}
+const BG = {silk:bgSilk, modern:bgModern, sand:bgSand};
+
+/* ---------- dynamic layer ---------- */
+function fgDefs(){
+  return `<defs><clipPath id="avclip"><circle r="14.5"/></clipPath>
+  <filter id="fx-blur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+  <filter id="fx-glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="fx-rough" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".08" numOctaves="2" seed="5" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="4" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <radialGradient id="fx-fire"><stop offset="0" stop-color="#ffcf5a" stop-opacity=".9"/><stop offset=".5" stop-color="#ff6a1f" stop-opacity=".45"/><stop offset="1" stop-color="#ff3d00" stop-opacity="0"/></radialGradient>
+  <pattern id="fx-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#c23b2c" stroke-width="1.6"/></pattern></defs>`;
+}
+
+const SHIPS = [];
+for (let r=0;r<3;r++) for (let c=0;c<6;c++){ const x = 406+c*24+(r%2)*9; SHIPS.push([x, Math.round(riverY(x)-42+r*13)]); }
+function shipsLayer(P, s){
+  const burn = clamp01((s-1.8)/.4), sink = clamp01((s-2.1)/.7)*.6;
+  const base = P.key==='silk' ? '#3b3024' : P.key==='modern' ? mix(P.wei,'#ffffff',.3) : P.wei;
+  const hull = mix(base, '#1a1410', burn*.85);
+  let o = '', chain = '';
+  for (let r=0;r<3;r++) for (let c=0;c<5;c++){ const a = SHIPS[r*6+c], b = SHIPS[r*6+c+1]; chain += `M${a[0]+9},${a[1]+2} L${b[0]-9},${b[1]+2} `; }
+  o += `<path d="${chain}" stroke="${P.key==='sand'?'#8fb0d0':'#4d4438'}" stroke-width=".9" stroke-dasharray="1.5 1.5" fill="none" opacity="${1-burn*.6}"/>`;
+  SHIPS.forEach(([x,y],i) => {
+    if (((i*7)%18)/18 < sink) return;
+    if (P.key==='sand') o += `<path d="M${x-9},${y} h18 l-3.5,4.5 h-11 z" fill="${mix(hull,'#000000',.55)}" stroke="${hull}" stroke-width="1"/>`;
+    else o += `<path d="M${x-9},${y} h18 l-3.5,4.5 h-11 z" fill="${hull}"/>`;
+    o += `<path d="M${x},${y} v-9" stroke="${hull}" stroke-width="1"/>`;
+    if (burn < .5) o += `<path d="M${x+1},${y-9} l6,5 h-6 z" fill="${P.key==='sand'?'#cfe0ff':'#f1e8d0'}" stroke="${hull}" stroke-width=".5"/>`;
+  });
+  return o;
+}
+
+function trailsLayer(P, s, lore){
+  let o = '';
+  for (const u of UNITS){
+    if (!visible(u,s,lore)) continue;
+    const pts = [];
+    for (const k of u.kf){ const p = k[1], l = pts[pts.length-1]; if (!l || l[0]!==p[0] || l[1]!==p[1]) pts.push(p); }
+    if (pts.length < 2) continue;
+    const col = P[u.f], cur = stateAt(u,s);
+    const done = [];
+    for (const k of u.kf){ if (k[0] <= s){ const p = k[1], l = done[done.length-1]; if (!l || l[0]!==p[0] || l[1]!==p[1]) done.push(p); } }
+    done.push([Math.round(cur.x), Math.round(cur.y)]);
+    const a = pts[pts.length-2], b = pts[pts.length-1], ang = Math.atan2(b[1]-a[1], b[0]-a[0])*180/Math.PI;
+    const head = `<path d="M0,0 L-11,-6 L-11,6 Z" transform="translate(${b[0]},${b[1]}) rotate(${f1(ang)})" fill="${col}"`;
+    if (P.key==='silk'){
+      o += `<path d="${smooth(pts)}" fill="none" stroke="${col}" stroke-width="1.6" stroke-dasharray="2 6" stroke-linecap="round" opacity=".6"/>`;
+      if (done.length>1) o += `<path d="${smooth(done)}" fill="none" stroke="${col}" stroke-width="3.2" stroke-linecap="round" opacity=".55" filter="url(#fx-rough)"/>`;
+      o += head + ` opacity=".6"/>`;
+    } else if (P.key==='modern'){
+      o += `<path d="${smooth(pts)}" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="7 5" opacity=".55"/>`;
+      if (done.length>1) o += `<path d="${smooth(done)}" fill="none" stroke="${col}" stroke-width="4.5" stroke-linecap="round" opacity=".7"/>`;
+      o += head + ` opacity=".8"/>`;
+    } else {
+      o += `<path d="${smooth(pts)}" fill="none" stroke="${col}" stroke-width="1.4" stroke-dasharray="3 6" opacity=".55"/>`;
+      if (done.length>1) o += `<path d="${smooth(done)}" fill="none" stroke="${col}" stroke-width="2.6" stroke-linecap="round" opacity=".9" filter="url(#fx-glow)"/>`;
+      o += head + ` opacity=".9" filter="url(#fx-glow)"/>`;
+    }
+  }
+  return o;
+}
+
+const FIRE_PTS = SHIPS.map(([x,y],i) => [x + ((i*37)%9)-4, y-4]).sort((a,b) => ((a[0]*13+a[1]*7)%17) - ((b[0]*13+b[1]*7)%17));
+function flame(x,y,sc){ return `<g transform="translate(${f1(x)},${f1(y)}) scale(${sc.toFixed(2)})"><path d="M0,-16 C8,-7 7,0 0,3 C-7,0 -8,-7 0,-16Z" fill="#e2521b"/><path d="M0,-8 C4,-4 3.5,-1 0,1.5 C-3.5,-1 -4,-4 0,-8Z" fill="#ffc64d"/></g>`; }
+function fireLayer(P, s, ts){
+  const I = fireI(s); if (!I) return '';
+  const t = reduce ? 0 : ts/1000;
+  const n = Math.ceil(FIRE_PTS.length*I);
+  const pts = FIRE_PTS.slice(0,n);
+  const camp = s>=1.95 ? WEI_CAMP.slice(0, Math.ceil(WEI_CAMP.length*clamp01((s-1.95)/.3))) : [];
+  const all = pts.concat(camp);
+  let o = '';
+  if (P.key==='sand'){
+    o += `<ellipse cx="470" cy="${riverY(470)-30}" rx="${f1(40+80*I)}" ry="${f1(18+30*I)}" fill="url(#fx-fire)" opacity="${f1(.5+.3*I)}"/>`;
+    for (const [x,y] of camp) o += `<circle cx="${x}" cy="${y}" r="16" fill="url(#fx-fire)"/>`;
+  } else {
+    // smoke drifting to the north-west with the south-east wind
+    for (let i=0;i<5;i++){ const k = i/4; o += `<ellipse cx="${f1(470-40-k*120 + Math.sin(t*.6+i)*4)}" cy="${f1(riverY(470)-50-k*80)}" rx="${f1(34+k*30)}" ry="${f1(16+k*10)}" fill="${P.key==='silk'?'#4a4038':'#5c5f63'}" opacity="${f1((.28-k*.04)*I)}" filter="url(#fx-blur)"/>`; }
+    if (P.key==='modern') o += `<ellipse cx="470" cy="${riverY(470)-30}" rx="${f1(30+70*I)}" ry="${f1(12+20*I)}" fill="url(#fx-hatch)" stroke="#c23b2c" stroke-width="1.5" opacity=".75"/>`;
+  }
+  all.forEach(([x,y],i) => {
+    const sc = (.75 + .28*Math.sin(t*9 + i*1.9) + .1*Math.sin(t*23 + i)) * (P.key==='modern' ? .8 : 1);
+    o += P.key==='silk' ? `<g filter="url(#fx-rough)">${flame(x,y,sc)}</g>` : flame(x,y,sc);
+  });
+  if (P.key==='modern' && I>.3) o += label(560,260,'火攻區',P,11,'font-weight="700" fill="#c23b2c"');
+  return o;
+}
+
+/* ---------- unit icons ---------- */
+function glyph(type, c){
+  const sk = `stroke="${c}" stroke-width="2.2" fill="none" stroke-linecap="round"`;
+  switch (type){
+    case 'inf': return `<path d="M-22,-15 L22,15 M-22,15 L22,-15" ${sk}/>`;
+    case 'cav': return `<path d="M-22,15 L22,-15" ${sk}/>`;
+    case 'navy': return `<path d="M-12,2 H12 L8,9 H-8 Z" fill="${c}"/><path d="M0,2 V-11 L9,-3 H0" ${sk}/>`;
+    case 'fire': return `<path d="M-12,5 H12 L8,11 H-8 Z" fill="${c}"/><path d="M0,-12 C7,-6 6,-1 0,2 C-6,-1 -7,-6 0,-12Z" fill="#e0561c"/><path d="M0,-6 C3,-3 3,-1 0,1 C-3,-1 -3,-3 0,-6Z" fill="#ffc34d"/>`;
+  }
+  return '';
+}
+function frame(u, P, col, routed){
+  const fill = P.key==='sand' ? mix(col,'#0d130f',.75) : mix(col, P.key==='silk'?'#f0e4c6':'#ffffff', .8);
+  const gc = P.key==='sand' ? col : mix(col,'#000000',.25);
+  return `<rect x="-22" y="-15" width="44" height="30" fill="${fill}" stroke="${col}" stroke-width="2.5" ${routed?'stroke-dasharray="5 3"':''}/>${glyph(u.type,gc)}<text x="0" y="-20" text-anchor="middle" font-size="10" font-weight="700" fill="${P.ink}" letter-spacing="1" font-family="IBM Plex Mono,monospace">${u.size}</text>`;
+}
+function avatar(u, P, col){
+  const armor = mix(col,'#000000',.3), face = u.face || '#e8c39b';
+  let o = `<rect x="-16" y="-16" width="32" height="32" fill="${P.avBg}"/>`;
+  o += `<path d="M-15,16 Q-13,5 0,5 Q13,5 15,16 Z" fill="${armor}"/><path d="M-4,5 L0,9 L4,5" fill="none" stroke="${mix(armor,'#ffffff',.45)}" stroke-width="1.2"/>`;
+  o += `<ellipse cx="0" cy="-1" rx="5.6" ry="6.6" fill="${face}"/><circle cx="-2.1" cy="-1.6" r=".75" fill="#2a2018"/><circle cx="2.1" cy="-1.6" r=".75" fill="#2a2018"/>`;
+  if (u.beard==='short') o += `<path d="M-3.2,3 Q0,8 3.2,3 Q0,5 -3.2,3Z" fill="#2b2420"/>`;
+  if (u.beard==='long') o += `<path d="M-4.6,1.8 Q-3.5,14 0,18 Q3.5,14 4.6,1.8 Q0,5 -4.6,1.8Z" fill="#171412"/>`;
+  if (u.beard==='grey') o += `<path d="M-4.6,1.8 Q-2,11 0,12.5 Q2,11 4.6,1.8 Q0,5 -4.6,1.8Z" fill="#d3cdbf"/>`;
+  if (u.hat==='scarf') o += `<path d="M-6.5,-3.5 Q-7,-12 0,-12.5 Q7,-12 6.5,-3.5 Q3,-6.5 0,-6.5 Q-3,-6.5 -6.5,-3.5Z" fill="#3c4a5c"/><path d="M5,-9 q5,2 6,8" stroke="#3c4a5c" stroke-width="2" fill="none"/>`;
+  else o += `<path d="M-7.5,-2 Q-8,-13 0,-13.5 Q8,-13 7.5,-2 Q4,-7 0,-7.5 Q-4,-7 -7.5,-2Z" fill="#2f2b27"/><path d="M0,-13 V-17.5" stroke="${col}" stroke-width="2.6" stroke-linecap="round"/>`;
+  return o;
+}
+function iconSymbol(u,P,col,st,routed){
+  return frame(u,P,col,routed) + label(0,30,u.gen,P,11.5,'font-weight="700"') + label(0,43,fmtStr(st.str),P,10.5,'font-family="IBM Plex Mono,monospace"');
+}
+function iconBanner(u,P,col,st,routed){
+  const pole = P.key==='sand' ? '#b9a57a' : '#4a3826';
+  let t = '';
+  for (let i=0;i<5;i++){ const y = -70+i*6; t += `M27,${y} L32,${y+3} L27,${y+6} `; }
+  for (let i=0;i<4;i++){ const x = 1+i*6.5; t += `M${x},-40 L${f1(x+3.25)},-35 L${f1(x+6.5)},-40 `; }
+  let o = `<line x1="0" y1="-14" x2="0" y2="-72" stroke="${pole}" stroke-width="2"/><circle cx="0" cy="-73" r="2" fill="${pole}"/>`;
+  o += `<rect x="1" y="-70" width="26" height="30" fill="${col}" ${routed?'opacity=".7"':''}/><path d="${t}" fill="${col}"/>`;
+  o += `<text x="14" y="-48" text-anchor="middle" font-size="19" font-weight="700" fill="#fbf3dd" font-family="${P.cal}">${u.sur}</text>`;
+  o += `<circle r="16.5" fill="${P.avBg}" stroke="${col}" stroke-width="3" ${routed?'stroke-dasharray="4 3"':''}/><g clip-path="url(#avclip)">${avatar(u,P,col)}</g>`;
+  o += label(0,31,u.gen,P,11.5,'font-weight="700"');
+  const w = 36*clamp01(st.str/u.init);
+  o += `<rect x="-18" y="36" width="36" height="4" rx="1" fill="${P.key==='sand'?'#33403a':'#00000022'}"/><rect x="-18" y="36" width="${f1(w)}" height="4" rx="1" fill="${col}"/>`;
+  return o;
+}
+function iconToken(u,P,col,st,routed){
+  const track = P.key==='sand' ? '#2e3a33' : mix(P.panel,'#000000',.12);
+  let o = `<path d="M-30,-24 V-41 H-10 L-14,-35.5 L-10,-30 H-30" fill="${col}"/><text x="-21" y="-31.5" text-anchor="middle" font-size="10" font-weight="700" fill="#fbf3dd" font-family="${P.cal}">${u.sur}</text>`;
+  o += `<rect x="-34" y="-24" width="68" height="48" rx="3" fill="${P.panel}" stroke="${col}" stroke-width="1.6" ${routed?'stroke-dasharray="4 3"':''}/><rect x="-34" y="-24" width="4" height="48" fill="${col}"/>`;
+  o += `<circle cx="-14" cy="-4" r="12.8" fill="${P.avBg}" stroke="${col}" stroke-width="1.8"/><g transform="translate(-14,-4) scale(.82)"><g clip-path="url(#avclip)">${avatar(u,P,col)}</g></g>`;
+  o += `<g transform="translate(15,-12) scale(.42)">${frame(u,P,col,false).replace(/<text[\s\S]*<\/text>/,'')}</g>`;
+  o += `<text x="15" y="5" text-anchor="middle" font-size="9.5" font-weight="700" fill="${P.ink}" font-family="${P.font}">${u.gen.length>3?u.gen.slice(0,2):u.gen}</text>`;
+  o += `<text x="15" y="13.5" text-anchor="middle" font-size="8" fill="${P.ink}" font-family="IBM Plex Mono,monospace">${fmtStr(st.str)}</text>`;
+  o += `<rect x="-28" y="16" width="58" height="3" fill="${track}"/><rect x="-28" y="16" width="${f1(58*clamp01(st.str/u.init))}" height="3" fill="${col}"/>`;
+  o += `<rect x="-28" y="20.5" width="58" height="2.2" fill="${track}"/><rect x="-28" y="20.5" width="${f1(58*st.mor/100)}" height="2.2" fill="#c9a13b"/>`;
+  return o;
+}
+const ICON = {symbol:iconSymbol, banner:iconBanner, token:iconToken};
+const HIT = {symbol:[-36,-30,72,78], banner:[-24,-76,58,120], token:[-36,-44,72,70]};
+const RING = {symbol:31, banner:24, token:46};
+
+function unitSVG(u, P, army, s, sel, ts, pos){
+  const st = stateAt(u,s), routed = st.mor < 15, col = P[u.f];
+  const x = pos ? pos[0] : st.x, y = pos ? pos[1] : st.y;
+  let ring = '';
+  if (sel){ const rot = reduce ? 0 : (ts/40)%360; ring = `<circle r="${RING[army]}" fill="none" stroke="${P.sel}" stroke-width="2.2" stroke-dasharray="6 5" transform="rotate(${f1(rot)})"/>`; }
+  const [hx0,hy0,hw,hh] = HIT[army];
+  return `<g class="unit" data-id="${u.id}" transform="translate(${f1(x)},${f1(y)})" opacity="${routed?.6:1}" ${P.key==='sand'?'filter="url(#fx-glow)"':''}>${ring}${ICON[army](u,P,col,st,routed)}<rect x="${hx0}" y="${hy0}" width="${hw}" height="${hh}" fill="transparent"/></g>`;
+}
+
+function fgSVG(P, s, lore, army, ts, sel){
+  let o = fgDefs() + shipsLayer(P,s) + trailsLayer(P,s,lore);
+  const n = nightAt(hourAt(s));
+  if (n > 0) o += `<rect width="${W}" height="${H}" fill="${P.night}" opacity="${(n*P.nightA).toFixed(3)}" pointer-events="none"/>`;
+  o += fireLayer(P,s,ts);
+  const vis = UNITS.filter(u => visible(u,s,lore)).map(u => [u, stateAt(u,s).y]).sort((a,b) => a[1]-b[1]);
+  for (const [u] of vis) o += unitSVG(u,P,army,s,sel===u.id,ts);
+  return o;
+}
+
+/* ---------- app state ---------- */
+const store = {
+  get(k,d){ try { const v = localStorage.getItem('chibi.'+k); return v==null ? d : v; } catch(e){ return d; } },
+  set(k,v){ try { localStorage.setItem('chibi.'+k, v); } catch(e){} }
+};
+const state = {
+  map: store.get('map','silk'), army: store.get('army','banner'), lore: store.get('lore','novel'),
+  speed: 1, s: 1.9, playing: false, sel: 'huanggai'
+};
+if (!STYLES[state.map]) state.map = 'silk';
+if (!ICON[state.army]) state.army = 'banner';
+if (state.lore!=='history' && state.lore!=='novel') state.lore = 'novel';
+
+const $ = id => document.getElementById(id);
+const bgEl = $('bg'), fgEl = $('fg'), tl = $('tl');
+let dirty = true, lastR = 0, logKey = '';
+
+function syncSeg(id, val){ document.querySelectorAll(`#${id} button`).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v===String(val)))); }
+function renderBg(){ bgEl.innerHTML = BG[state.map](); }
+function syncPlay(){
+  $('play').innerHTML = state.playing ? '<svg viewBox="0 0 20 20"><rect x="4" y="3" width="4" height="14"/><rect x="12" y="3" width="4" height="14"/></svg>' : '<svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z"/></svg>';
+  $('play').setAttribute('aria-label', state.playing ? '暫停' : '播放');
+}
+
+function cssFaction(f){ return `var(--${f})`; }
+function renderPanel(){
+  const s = state.s, c = clockAt(s), wd = windAt(s), n = nightAt(hourAt(s));
+  $('clock').innerHTML = `建安十三年冬・${c.day} ${c.sc}<small>${c.hm}</small>`;
+  $('phase').textContent = phaseAt(s);
+  $('compass').innerHTML = `<circle r="27" fill="none" stroke="var(--line)" stroke-width="1.5"/><text y="-17" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="var(--sans)">北</text><text y="23" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="var(--sans)">南</text><g transform="rotate(${f1(wd.a)})"><path d="M0,-18 L6,-6 L2,-6 L2,16 L-2,16 L-2,-6 L-6,-6 Z" fill="${s>=.9?'var(--wu)':'var(--muted)'}"/></g>`;
+  $('wx').textContent = `${wd.name}・風力 ${wd.force}`;
+  $('wx-sub').textContent = `${n>.5?'夜':'晝'}・${s<.9?'風向對曹軍有利':'順風，火攻可行'}`;
+
+  const tot = {wei:[0,0], wu:[0,0], shu:[0,0]};
+  for (const u of UNITS){ if (u.lore && u.lore!==state.lore) continue; tot[u.f][1] += u.init; if (visible(u,s,state.lore)) tot[u.f][0] += stateAt(u,s).str; }
+  const max = Math.max(...Object.values(tot).map(v => v[1]));
+  $('forces').innerHTML = Object.entries(tot).map(([f,[cur,ini]]) =>
+    `<div class="frow"><span>${FNAME[f]}</span><span class="bar"><i style="width:${(cur/max*100).toFixed(1)}%;background:${cssFaction(f)}"></i></span><b>${fmtStr(cur)}</b></div>`).join('');
+
+  const u = UNITS.find(x => x.id===state.sel);
+  const card = $('unit-card');
+  if (!u || !visible(u,s,state.lore)){ card.innerHTML = `<h3>兵團資料</h3><p class="note" style="margin:0">點地圖上的兵團查看兵力、士氣與狀態。</p>`; }
+  else {
+    const st = stateAt(u,s), P = STYLES.modern;
+    card.innerHTML = `<h3>兵團資料</h3><div class="u-head"><svg viewBox="-18 -18 36 36" aria-hidden="true"><defs><clipPath id="avclip-p"><circle r="16"/></clipPath></defs><circle r="17" fill="${P.avBg}"/><g clip-path="url(#avclip-p)">${avatar(u,P,P[u.f])}</g><circle r="16.5" fill="none" stroke="${cssFaction(u.f)}" stroke-width="2.5"/></svg>
+      <div><h4>${u.gen}</h4><p>${FNAME[u.f]}・${u.title}・${TYPE[u.type]}・規模 ${u.size}（${SIZE[u.size]}）</p></div></div>
+      <dl class="stats">
+        <dt>兵力</dt><dd><span class="bar"><i style="width:${(clamp01(st.str/u.init)*100).toFixed(1)}%;background:${cssFaction(u.f)}"></i></span><b>${fmtStr(st.str)} / ${fmtStr(u.init)}</b></dd>
+        <dt>士氣</dt><dd><span class="bar"><i style="width:${st.mor.toFixed(1)}%;background:var(--gold)"></i></span><b>${Math.round(st.mor)}</b></dd>
+        <dt>狀態</dt><dd class="plain">${statusAt(u,s)}${st.mor<15?'（潰散）':''}</dd>
+      </dl><p class="note">${u.note[state.lore] || u.note.history || ''}</p>`;
+  }
+
+  // log
+  const key = state.lore;
+  if (key !== logKey){
+    logKey = key;
+    $('log').innerHTML = EVENTS.map((e,i) => { const c2 = clockAt(e.s);
+      return `<li data-i="${i}"><button type="button" data-s="${e.s}"><span class="ev-t">${e.title}<span>${c2.day.slice(1,2)}日 ${c2.sc}</span></span><span class="ev-x">${e.text[state.lore]}</span><span class="ev-s">${state.lore==='history'?'正史':'演義'}・${e.src[state.lore]}</span></button></li>`; }).join('');
+  }
+  let cur = -1; EVENTS.forEach((e,i) => { if (s >= e.s - 1e-6) cur = i; });
+  document.querySelectorAll('#log li').forEach((li,i) => { li.classList.toggle('future', i>cur); li.classList.toggle('cur', i===cur); });
+  document.querySelectorAll('#ticks .tick').forEach((b,i) => b.classList.toggle('on', i<=cur));
+}
+
+function renderFg(ts){ fgEl.innerHTML = fgSVG(STYLES[state.map], state.s, state.lore, state.army, ts, state.sel); }
+
+function loop(ts){
+  const dt = Math.min(.1, (ts - (loop.prev || ts))/1000); loop.prev = ts;
+  if (state.playing){
+    state.s = Math.min(3, state.s + dt*state.speed*.1);
+    if (state.s >= 3){ state.playing = false; syncPlay(); }
+    tl.value = state.s; dirty = true;
+  }
+  const anim = !reduce && (fireI(state.s) > 0 || state.sel);
+  if (dirty || (anim && ts - lastR > 60)){
+    renderFg(ts); lastR = ts;
+    if (dirty) renderPanel();
+    dirty = false;
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ---------- comparison cards ---------- */
+const MAP_INFO = {
+  silk:{name:'絹本水墨', tag:'沉浸・古風', army:'banner', desc:'仿古代輿圖與青綠山水：絹紙底、墨線江岸、水紋、直書地名、朱印題簽。最有三國味，截圖就是宣傳圖。',
+    pro:['氛圍最強，最適合歷史重播與劇情演出','和「帥旗頭像」最搭'], con:['兵團一多畫面容易亂','夜戰、火攻特效需要更多美術打磨']},
+  modern:{name:'現代戰史圖', tag:'清楚・易讀', army:'symbol', desc:'參考現代戰史地圖集：等高線分層設色、格網座標、比例尺（里／公里）、粗箭頭標示行軍路線。',
+    pro:['資訊最清楚，戰術動態一目了然','手機小螢幕上仍然好讀'], con:['遊戲感與沉浸感較弱']},
+  sand:{name:'沙盤夜戰', tag:'遊戲感', army:'token', desc:'深色立體沙盤加六角格，陣營色會發光，像策略遊戲的戰術畫面。',
+    pro:['最像遊戲，之後親自指揮可直接用格子下令','深色底讓火攻、夜戰特效最突出'], con:['歷史感最弱','發光特效在舊手機上較吃效能']},
+};
+const ARMY_INFO = {
+  symbol:{name:'軍事符號', tag:'清楚・可縮放', desc:'仿北約 APP-6 軍隊符號：框內圖形代表兵種（✕ 步兵、╱ 騎兵，另自訂水軍與火船），上方記號代表規模。',
+    pro:['縮小仍清楚，兵團多也不亂'], con:['一般玩家要先學符號（會附圖例）'], legend:'Ⅰ 百人級・Ⅱ 千人級・Ⅲ 數千・XX 萬人級・XXX 數萬'},
+  banner:{name:'帥旗頭像', tag:'人物・戲劇性', desc:'牙旗上寫主將姓氏，下方是將領頭像與兵力條。三國遊戲玩家最熟悉。',
+    pro:['一眼認出是誰的部隊，最有戲劇張力'], con:['佔空間，兵團密集時會重疊']},
+  token:{name:'旗牌合一', tag:'資訊最完整', desc:'把姓氏旗、頭像、兵種符號、兵力與士氣條收進一張棋子卡。',
+    pro:['資訊最完整，適合放大或選取時顯示'], con:['最小尺寸下細節看不清']},
+};
+function renderCards(){
+  $('map-cards').innerHTML = Object.entries(MAP_INFO).map(([k,m]) => {
+    const P = STYLES[k];
+    const svg = `<svg viewBox="0 0 1000 620" aria-hidden="true">${BG[k]()}${fgSVG(P,1.95,'novel',m.army,0,null)}</svg>`;
+    return `<article class="opt${state.map===k?' sel':''}" data-kind="map" data-v="${k}"><div class="thumb">${svg}</div><div class="opt-body">
+      <h3>${m.name}<span class="tag">${m.tag}</span></h3><p>${m.desc}</p>
+      <ul class="pc">${m.pro.map(x=>`<li class="pro">${x}</li>`).join('')}${m.con.map(x=>`<li class="con">${x}</li>`).join('')}</ul>
+      <button type="button" class="use">${state.map===k?'使用中':'套用此地圖'}</button></div></article>`;
+  }).join('');
+  renderArmyCards();
+}
+function renderArmyCards(){
+  const P = STYLES[state.map];
+  const sample = ['caocao','zhouyu','guanyu'].map(id => UNITS.find(u => u.id===id));
+  const yOf = {symbol:62, banner:92, token:80};
+  $('army-cards').innerHTML = Object.entries(ARMY_INFO).map(([k,a]) => {
+    const units = sample.map((u,i) => unitSVG(u,P,k,2.5,false,0,[55+i*95, yOf[k]])).join('');
+    const svg = `<svg viewBox="0 0 300 150" aria-hidden="true">${fgDefs()}<rect width="300" height="150" fill="${P.paper}"/>${units}</svg>`;
+    return `<article class="opt${state.army===k?' sel':''}" data-kind="army" data-v="${k}"><div class="thumb army">${svg}</div><div class="opt-body">
+      <h3>${a.name}<span class="tag">${a.tag}</span></h3><p>${a.desc}</p>${a.legend?`<p class="scale-legend">${a.legend}</p>`:''}
+      <ul class="pc">${a.pro.map(x=>`<li class="pro">${x}</li>`).join('')}${a.con.map(x=>`<li class="con">${x}</li>`).join('')}</ul>
+      <button type="button" class="use">${state.army===k?'使用中':'套用此風格'}</button></div></article>`;
+  }).join('');
+}
+function markCards(){
+  document.querySelectorAll('.opt').forEach(el => {
+    const on = (el.dataset.kind==='map' ? state.map : state.army) === el.dataset.v;
+    el.classList.toggle('sel', on);
+    el.querySelector('.use').textContent = on ? '使用中' : (el.dataset.kind==='map' ? '套用此地圖' : '套用此風格');
+  });
+}
+
+/* ---------- events ---------- */
+function setMap(v){ state.map = v; store.set('map', v); syncSeg('seg-map', v); renderBg(); renderArmyCards(); markCards(); dirty = true; }
+function setArmy(v){ state.army = v; store.set('army', v); syncSeg('seg-army', v); markCards(); dirty = true; }
+$('seg-map').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMap(b.dataset.v); });
+$('seg-army').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setArmy(b.dataset.v); });
+$('seg-lore').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.lore = b.dataset.v; store.set('lore', state.lore); syncSeg('seg-lore', state.lore); dirty = true; });
+$('seg-speed').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.speed = +b.dataset.v; syncSeg('seg-speed', state.speed); });
+$('play').addEventListener('click', () => { if (!state.playing && state.s >= 3) state.s = 0; state.playing = !state.playing; syncPlay(); });
+tl.addEventListener('input', () => { state.s = +tl.value; state.playing = false; syncPlay(); dirty = true; });
+fgEl.addEventListener('click', e => { const g = e.target.closest('.unit'); if (g){ state.sel = g.dataset.id; dirty = true; } });
+function jump(s){ state.s = s; tl.value = s; state.playing = false; syncPlay(); dirty = true; }
+$('log').addEventListener('click', e => { const b = e.target.closest('button'); if (b) jump(+b.dataset.s + .02); });
+$('ticks').innerHTML = EVENTS.map(e => `<button type="button" class="tick" style="left:${(e.s/3*100).toFixed(2)}%" data-s="${e.s}" title="${e.title}" aria-label="跳到：${e.title}"></button>`).join('');
+$('ticks').addEventListener('click', e => { const b = e.target.closest('.tick'); if (b) jump(+b.dataset.s + .02); });
+document.querySelector('.compare').addEventListener('click', e => {
+  const b = e.target.closest('.use'); if (!b) return;
+  const card = b.closest('.opt');
+  if (card.dataset.kind==='map') setMap(card.dataset.v); else setArmy(card.dataset.v);
+  document.querySelector('.stage').scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'start'});
+});
+
+/* ---------- boot ---------- */
+syncSeg('seg-map', state.map); syncSeg('seg-army', state.army); syncSeg('seg-lore', state.lore); syncSeg('seg-speed', state.speed);
+syncPlay(); renderBg(); renderCards();
+const sc = $('map-scroll');
+requestAnimationFrame(() => { if (sc.scrollWidth > sc.clientWidth) sc.scrollLeft = (sc.scrollWidth - sc.clientWidth) * .45; });
+requestAnimationFrame(loop);
+})();
+</script>
